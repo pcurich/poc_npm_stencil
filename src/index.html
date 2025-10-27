@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
+    <title>Stencil Component Starter</title>
+
+    <script type="module" src="/build/poc-http-mock.esm.js"></script>
+    <script nomodule src="/build/poc-http-mock.js"></script>
+  </head>
+  <body>
+    <my-component></my-component>
+    <script>
+      // Example: listen to contextTypeChangeEvent emitted by <my-component>
+      window.addEventListener('DOMContentLoaded', () => {
+        const comp = document.querySelector('my-component');
+        if (!comp) return;
+        comp.addEventListener('contextTypeChangeEvent', (ev) => {
+          // ev is a CustomEvent; the payload is in ev.detail
+          // Log full ContextOption object
+          // Example: { id: number, value: string, useMock: boolean }
+          // You can react here (save to localStorage, call APIs, reload app, etc.)
+          // eslint-disable-next-line no-console
+          console.log('contextTypeChangeEvent received:', ev.detail);
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,451 @@
+import { Component, Prop, State, h, Event, EventEmitter, Watch } from '@stencil/core';
+import { ContextOption, HttpMethod } from './public-pi';
+
+@Component({
+  tag: 'my-component',
+  styleUrl: 'my-component.css',
+  shadow: true,
+})
+export class MyComponent {
+  // UI state (based on the Angular example provided)
+  @State() showForm: boolean = true;
+  @State() position: { bottom: number; right: number } = { bottom: 32, right: 32 };
+  private dragging: boolean = false;
+  private dragStart = { x: 0, y: 0, bottom: 32, right: 32 };
+  @State() activeTab: number = 0;
+
+
+  /**
+   * ID del contexto que se usará para cargar un registro específico.
+   * - Puede ser establecido por el host como una propiedad (`contextId`).
+   * - Se utiliza en la pestaña "Cargar"; al pulsar "Cargar registro" el componente
+   *   emite `loadContextEvent` con este identificador para que el host lo procese.
+   */
+  @Prop() contextId: number = 1;
+  /** The current context type can be provided by the host as a ContextOption prop */
+  @Prop() selectedContext?: ContextOption;
+
+  /** List of available context options. Can be provided by the host; defaults to the three built-in options. */
+  @Prop() contextOptions: ContextOption[] = [
+    { id: 1, value: '---------', useMock: false },
+    { id: 2, value: 'Usar HTTP', useMock: false },
+    { id: 3, value: 'Usar Data', useMock: true },
+  ];
+
+  /** List of available HTTP methods. Can be provided by the host; defaults to the five built-in options. */
+  @Prop() httpMethods: HttpMethod[] = [
+    'GET',
+    'POST',
+    'PUT',
+    'DELETE',
+    'PATCH'
+  ];
+
+  /** Codes that populate the Código HTTP select. Can be set by the host as a prop. */
+  @Prop() httpCodeResponse: number[] = [200, 204, 400, 500];
+
+  /** Optional initial headers provided by the host */
+  @Prop() headers?: Record<string, string>;
+
+  // form fields
+  @Prop() name: string = '';
+  @Prop() serviceCode: string = '';
+  @Prop() url: string = '';
+  @Prop() httpMethod: HttpMethod = 'GET';
+  @Prop() httpCodeResponseValue: number = 200;
+  @Prop() delayMs: number = 0;
+  @Prop() responseBody: string = '{}';
+
+  // Internal header editor state
+  @State() headersState: Array<{ key: string; value: string }> = [];
+  @State() newHeaderKey: string = '';
+  @State() newHeaderValue: string = '';
+
+  @Watch('headers')
+  protected headersChanged(newVal?: Record<string, string>) {
+    // Sync host-provided headers into internal array form
+    if (!newVal) {
+      this.headersState = [];
+      return;
+    }
+    this.headersState = Object.keys(newVal).map((k) => ({ key: k, value: newVal[k] }));
+  }
+
+  private floatingForm?: HTMLElement;
+
+  /** Events emitted so parent implementations can listen */
+  @Event() saveContextEvent!: EventEmitter<any>;
+  @Event() saveHeadersEvent!: EventEmitter<Record<string, string>>;
+  @Event() loadContextEvent!: EventEmitter<number>;
+  @Event() contextTypeChangeEvent!: EventEmitter<ContextOption>;
+  @Event() reloadEvent!: EventEmitter<void>;
+
+  // Drag handlers (mirror Angular logic)
+  private startDrag = (event: MouseEvent) => {
+    event.preventDefault();
+    this.dragging = true;
+    this.dragStart = {
+      x: event.clientX,
+      y: event.clientY,
+      bottom: this.position.bottom,
+      right: this.position.right,
+    };
+    document.addEventListener('mousemove', this.onDrag);
+    document.addEventListener('mouseup', this.stopDrag);
+  };
+
+  private onDrag = (event: MouseEvent) => {
+    if (!this.dragging) return;
+    const deltaY = event.clientY - this.dragStart.y;
+    const deltaX = event.clientX - this.dragStart.x;
+    this.position = {
+      bottom: Math.max(0, this.dragStart.bottom - deltaY),
+      right: Math.max(0, this.dragStart.right - deltaX),
+    };
+  };
+
+  private stopDrag = () => {
+    this.dragging = false;
+    document.removeEventListener('mousemove', this.onDrag);
+    document.removeEventListener('mouseup', this.stopDrag);
+  };
+
+  // Initialize selectedContext from prop or default
+  componentWillLoad() {
+    this.selectedContext = this.selectedContext ?? this.contextOptions[0];
+    // initialize header editor state from host-provided headers
+    this.headersChanged(this.headers);
+  }
+
+  // Called when the context type select changes; receives the selected ContextOption (or undefined)
+  private onContextTypeChange = (selectedOption?: ContextOption) => {
+    localStorage.setItem('useMock', JSON.stringify(selectedOption?.useMock));
+    this.selectedContext = selectedOption;
+    // Emit the full ContextOption (or undefined if not found)
+    this.contextTypeChangeEvent.emit(selectedOption);
+    // Note: original Angular called window.location.reload(); we emit event so the host can decide.
+  };
+
+  // Emit load event with the requested contextId
+  private loadContextById = () => {
+    this.loadContextEvent.emit(this.contextId);
+  };
+
+  // Build payload depending on active tab and emit save event
+  private saveContext = () => {
+    // reference floatingForm so the variable is considered used (avoids unused var lint)
+    void this.floatingForm;
+    let payload: any = null;
+    if (this.activeTab === 2) {
+      payload = {
+        code: Number(this.httpCodeResponseValue),
+        serviceCode: this.serviceCode,
+        delayMs: Number(this.delayMs),
+      };
+    } else if (this.activeTab === 3) {
+      try {
+        // normalize JSON
+        payload = { responseBody: JSON.stringify(JSON.parse(this.responseBody)) };
+      } catch (e) {
+        payload = { responseBody: this.responseBody };
+      }
+    }
+
+    this.saveContextEvent.emit(payload);
+  };
+
+  // Add a header (or update existing) and notify host
+  private addHeader = (ev?: MouseEvent) => {
+    // Prefer the controlled state value, but fall back to reading the inputs from the DOM
+    let key = this.newHeaderKey?.trim();
+    let value = this.newHeaderValue ?? '';
+    if (!key) {
+      // try to read from the form inputs (useful if state didn't propagate for some reason)
+      try {
+        const formEl = (ev && (ev.target as HTMLElement).closest('form')) || this.floatingForm?.querySelector('form');
+        const keyInput = formEl?.querySelector('#hdr-key') as HTMLInputElement | null;
+        const valInput = formEl?.querySelector('#hdr-val') as HTMLInputElement | null;
+        if (keyInput) key = keyInput.value?.trim() ?? '';
+        if (valInput) value = valInput.value ?? value;
+      } catch (e) {
+        // ignore and continue
+      }
+    }
+    if (!key) return;
+    const idx = this.headersState.findIndex((hdr) => hdr.key === key);
+    if (idx >= 0) {
+      // update
+      this.headersState = this.headersState.map((hdr, i) => (i === idx ? { key, value } : hdr));
+    } else {
+      this.headersState = [...this.headersState, { key, value }];
+    }
+    // clear inputs
+    this.newHeaderKey = '';
+    this.newHeaderValue = '';
+    this.emitSaveHeaders();
+  };
+
+  private removeHeader = (key: string) => {
+    this.headersState = this.headersState.filter((hdr) => hdr.key !== key);
+    this.emitSaveHeaders();
+  };
+
+  private emitSaveHeaders = () => {
+    const obj: Record<string, string> = {};
+    this.headersState.forEach((hdr) => (obj[hdr.key] = hdr.value));
+    this.saveHeadersEvent.emit(obj);
+  };
+
+  private onInputNumber(ev: Event, key: 'contextId' | 'delayMs') {
+    const val = (ev.target as HTMLInputElement).value;
+    (this as any)[key] = val === '' ? 0 : Number(val);
+  }
+
+  // Render helpers to improve readability
+  private renderTabs() {
+    return (
+      <div class="tabs">
+        <button type="button" class={{ active: this.activeTab === 0 }} onClick={() => (this.activeTab = 0)}>
+          Context
+        </button>
+        <button type="button" class={{ active: this.activeTab === 1 }} onClick={() => (this.activeTab = 1)}>
+          Load
+        </button>
+        <button type="button" class={{ active: this.activeTab === 2 }} onClick={() => (this.activeTab = 2)}>
+          Mock
+        </button>
+        <button type="button" class={{ active: this.activeTab === 3 }} onClick={() => (this.activeTab = 3)}>
+          Headers
+        </button>
+        <button type="button" class={{ active: this.activeTab === 4 }} onClick={() => (this.activeTab = 4)}>
+          Body
+        </button>
+      </div>
+    );
+  }
+
+  private renderContextTab() {
+    return (
+      <div>
+        <form class="context-form">
+          <div class="form-row">
+            <label htmlFor="contextType">Tipo de contexto:</label>
+            <select
+              id="contextType"
+              onInput={(e) => {
+                const id = Number((e.target as HTMLSelectElement).value);
+                const opt = this.contextOptions.find((o) => o.id === id);
+                this.onContextTypeChange(opt);
+              }}
+            >
+              {this.contextOptions.map((option) => (
+                <option value={String(option.id)} selected={option.id === this.selectedContext?.id}>
+                  {option.value}
+                </option>
+              ))}
+            </select>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  private renderLoadTab() {
+    return (
+      <div>
+        <form class="context-form">
+          <div class="form-row">
+            <label htmlFor="contextId">ID de registro:</label>
+            <input id="contextId" type="number" value={this.contextId} onInput={(e) => this.onInputNumber(e, 'contextId')} min={1} />
+          </div>
+          <button type="button" class="save-btn" onClick={() => this.loadContextById()}>
+            Cargar registro
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  private renderMockTab() {
+    return (
+      <div>
+        <form class="context-form">
+          <div class="form-row">
+            <label htmlFor="code">Código HTTP esperado:</label>
+            <select id="code" onInput={(e) => (this.httpCodeResponseValue = Number((e.target as HTMLSelectElement).value))}>
+              {this.httpCodeResponse.map((c) => (
+                <option value={String(c)} selected={c === this.httpCodeResponseValue}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label htmlFor="name">Nombre del mock:</label>
+            <input id="name" type="text" value={this.name} onInput={(e) => (this.name = (e.target as HTMLInputElement).value)} placeholder="Nombre del mock" />
+          </div>
+
+          <div class="form-row">
+            <label htmlFor="serviceCode">Identificador del servicio:</label>
+            <input id="serviceCode" type="text" value={this.serviceCode} onInput={(e) => (this.serviceCode = (e.target as HTMLInputElement).value)} placeholder="Identificador del servicio" />
+          </div>
+
+          <div class="form-row">
+            <label htmlFor="url">Url del servicio:</label>
+            <input id="url" type="text" value={this.url} onInput={(e) => (this.url = (e.target as HTMLInputElement).value)} placeholder="Url del servicio a mockear" />
+          </div>
+
+          <div class="form-row">
+            <label htmlFor="method">Metodo HTTP:</label>
+            <select id="method" onInput={(e) => (this.httpMethod = (e.target as HTMLSelectElement).value as HttpMethod)}>
+              {this.httpMethods.map((m) => (
+                <option value={m} selected={m === this.httpMethod}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label htmlFor="httpCodeResponseValue">Código respuesta:</label>
+            <input id="httpCodeResponseValue" type="number" value={this.httpCodeResponseValue} onInput={(e) => (this.httpCodeResponseValue = Number((e.target as HTMLInputElement).value))} placeholder="Código de respuesta" />
+          </div>
+
+          <div class="form-row">
+            <label htmlFor="delayMs">Tiempo de respuesta (ms):</label>
+            <input id="delayMs" type="number" value={this.delayMs} onInput={(e) => this.onInputNumber(e, 'delayMs')} min={0} step={1000} placeholder="Ej: 1000" />
+          </div>
+
+          <button type="button" class="save-btn" onClick={() => this.saveContext()}>
+            Guardar configuración
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  private renderHeadersTab() {
+    return (
+      <div>
+        <form class="context-form">
+          <div class="form-row">
+            <label htmlFor="contextType">Cabeceras:</label>
+          </div>
+
+          <div class="form-row">
+            <input id="hdr-key" type="text" value={this.newHeaderKey} onInput={(e) => (this.newHeaderKey = (e.target as HTMLInputElement).value)} placeholder="Clave (ej: Authorization)" />
+            <input id="hdr-val" type="text" value={this.newHeaderValue} onInput={(e) => (this.newHeaderValue = (e.target as HTMLInputElement).value)} placeholder="Valor (ej: Bearer token123)" />
+            <button type="button" class="add-btn" onClick={(e) => this.addHeader(e as MouseEvent)}>
+              Añadir
+            </button>
+          </div>
+
+          {this.headersState.length > 0 && (
+            <div class="form-row">
+              <div class="headers-wrapper">
+                <table class="headers-table">
+                  <thead>
+                    <tr>
+                      <th>Clave</th>
+                      <th>Valor</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {this.headersState.map((hdr) => (
+                      <tr>
+                        <td>
+                          <div class="cell-content" title={hdr.key} aria-label={hdr.key}>
+                            {hdr.key}
+                          </div>
+                        </td>
+                        <td>
+                          <div class="cell-content" title={hdr.value} aria-label={hdr.value}>
+                            {hdr.value}
+                          </div>
+                        </td>
+                        <td>
+                          <button type="button" class="remove-btn" onClick={() => this.removeHeader(hdr.key)} aria-label={`Eliminar ${hdr.key}`} title={`Eliminar ${hdr.key}`}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                              <path d="M3 6h18" />
+                              <path d="M8 6v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                              <path d="M10 11v6" />
+                              <path d="M14 11v6" />
+                            </svg>
+                            <span class="visually-hidden">Eliminar</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          <div class="form-row">
+            <button type="button" class="save-btn" onClick={() => this.emitSaveHeaders()}>
+              Guardar cabeceras
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  private renderBodyTab() {
+    return (
+      <div>
+        <form class="context-form">
+          <div class="form-row">
+            <label htmlFor="textarea">Respuesta esperada:</label>
+            <textarea id="textarea" rows={8} value={this.responseBody} onInput={(e) => (this.responseBody = (e.target as HTMLTextAreaElement).value)}></textarea>
+          </div>
+          <button type="button" class="save-btn" onClick={() => this.saveContext()}>
+            Guardar texto
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  private renderActiveTab() {
+    switch (this.activeTab) {
+      case 0:
+        return this.renderContextTab();
+      case 1:
+        return this.renderLoadTab();
+      case 2:
+        return this.renderMockTab();
+      case 3:
+        return this.renderHeadersTab();
+      case 4:
+        return this.renderBodyTab();
+      default:
+        return null;
+    }
+  }
+
+  render() {
+    return (
+      <div class="floating-context-form chat-style" ref={(el) => (this.floatingForm = el as HTMLElement)} style={{ bottom: `${this.position.bottom}px`, right: `${this.position.right}px` }}>
+        <div class="chat-header" onMouseDown={(e) => this.startDrag(e as MouseEvent)}>
+          <span>Configuración de contexto</span>
+          <button type="button" onClick={() => (this.showForm = !this.showForm)} class="toggle-btn">
+            {this.showForm ? '⨉' : '⚙️'}
+          </button>
+        </div>
+
+        {this.showForm && (
+          <div>
+            {this.renderTabs()}
+            {this.renderActiveTab()}
+          </div>
+        )}
+      </div>
+    );
+  }
+}
+

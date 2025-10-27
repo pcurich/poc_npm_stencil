@@ -1,0 +1,271 @@
+.floating-context-form.chat-style {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 1000;
+  background: #fff;
+  border-radius: 16px 16px 0 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  max-width: 420px;
+  min-width: 260px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  transition: box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1976d2;
+  color: #fff;
+  padding: 12px 18px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 16px 16px 0 0;
+  cursor: grab;
+  user-select: none;
+}
+
+.toggle-btn {
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.context-form {
+  padding: 18px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+select,
+input[type="number"],
+input[type="text"] {
+  padding: 8px 10px;
+  border: 1px solid #cfd8dc;
+  border-radius: 6px;
+  font-size: 15px;
+  background: #f7f9fa;
+  transition: border-color 0.2s;
+}
+
+select:focus,
+input:focus {
+  border-color: #1976d2;
+  outline: none;
+}
+
+.save-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: background 0.2s;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 12px;
+}
+
+.tabs button {
+  background: none;
+  border: none;
+  padding: 10px 18px;
+  font-size: 15px;
+  cursor: pointer;
+  color: #1976d2;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.tabs button.active {
+  border-bottom: 2px solid #1976d2;
+  font-weight: bold;
+  color: #1565c0;
+}
+
+textarea#textarea {
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', monospace;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-size: 15px;
+  padding: 12px;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 180px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* Header editor buttons */
+.add-btn {
+  background: linear-gradient(180deg, #43a047 0%, #2e7d32 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding:  12px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 8px;
+  box-shadow: 0 2px 6px rgba(46, 125, 50, 0.24);
+  transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+.add-btn:hover {
+  filter: brightness(0.95);
+}
+.add-btn:active {
+  transform: translateY(1px) scale(0.995);
+}
+
+.remove-btn {
+  background: #ffebee;
+  color: #b71c1c;
+  border: 1px solid rgba(183,28,28,0.12);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.08s;
+}
+.remove-btn:hover {
+  background: #ffcdd2;
+}
+.remove-btn:active {
+  transform: translateY(1px);
+}
+
+/* SVG in button sizing */
+.remove-btn svg {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+/* Layout tweaks: make the action column minimal and let the key/value cells take remaining space */
+.headers-table th:nth-child(3),
+.headers-table td:nth-child(3) {
+  width: 40px; /* fixed small width for the action (delete) column */
+  padding: 4px 6px;
+}
+
+.headers-table td:nth-child(1),
+.headers-table td:nth-child(2) {
+  /* ensure content cells can use remaining space */
+  padding-right: 8px;
+}
+
+.remove-btn {
+  /* make the remove button as compact as possible */
+  padding: 4px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.cell-content {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.headers-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.headers-table th,
+.headers-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eceff1;
+  text-align: left;
+}
+.headers-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Constrain headers table so it doesn't grow beyond the form-row and show vertical scroll */
+.headers-wrapper {
+  /* limit the visible height so the table can scroll when many headers exist */
+  max-height: 160px; /* adjust this value as needed */
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: 6px;
+  padding-right: 6px; /* give space for scrollbar */
+  box-sizing: border-box;
+}
+
+.headers-table {
+  width: 100%;
+  table-layout: fixed; /* prevent columns from expanding indefinitely */
+}
+.headers-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* cell content: show ellipsis but allow horizontal scrolling on hover and provide a native tooltip via title */
+.cell-content {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+.cell-content:hover {
+  /* allow user to scroll horizontally if they want to inspect long value */
+  overflow-x: auto;
+}
+.cell-content::-webkit-scrollbar {
+  height: 8px;
+}
+.cell-content::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 4px;
+}
+
+/* Make the thead stick if desired (optional). Uncomment to enable sticky header */
+/*
+.headers-wrapper thead th {
+  position: sticky;
+  top: 0;
+  background: #fafafa;
+  z-index: 2;
+}
+*/
