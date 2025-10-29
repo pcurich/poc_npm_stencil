@@ -18,6 +18,11 @@ export const config: Config = {
     {
       type: 'www',
       serviceWorker: null, // disable service workers
+      // copy our global stylesheet into the www output so the dev server serves /styles.css
+      copy: [
+        // use a relative path that avoids double-'src' resolution inside Stencil
+        { src: '../src/styles.css', dest: 'styles.css' },
+      ],
     },
   ],
   testing: {

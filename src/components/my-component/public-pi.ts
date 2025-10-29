@@ -1,1 +1,1 @@
-export { ContextOption, HttpMethod } from "./symbols";
+export { ContextOption, HttpMethod, MockSchema, MockBody } from "./symbols";

@@ -223,10 +223,15 @@ textarea#textarea {
   /* limit the visible height so the table can scroll when many headers exist */
   max-height: 160px; /* adjust this value as needed */
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto; /* allow horizontal scroll when keys/values are long */
   margin-top: 6px;
   padding-right: 6px; /* give space for scrollbar */
   box-sizing: border-box;
+}
+
+/* if the table is wider than the wrapper, allow horizontal scrolling */
+.headers-wrapper .headers-table {
+  min-width: 520px; /* prevents awkward wrapping of cells; tune as needed */
 }
 
 .headers-table {
