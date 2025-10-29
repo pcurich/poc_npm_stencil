@@ -5,17 +5,21 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { ContextOption, HttpMethod } from "./components/my-component/public-pi";
-export { ContextOption, HttpMethod } from "./components/my-component/public-pi";
+import { ContextOption, HttpMethod, MockBody, MockSchema } from "./components/my-component/public-pi";
+export { ContextOption, HttpMethod, MockBody, MockSchema } from "./components/my-component/public-pi";
 export namespace Components {
     interface MyComponent {
+        /**
+          * @default 0
+         */
+        "activeTab": number;
         /**
           * ID del contexto que se usará para cargar un registro específico. - Puede ser establecido por el host como una propiedad (`contextId`). - Se utiliza en la pestaña "Cargar"; al pulsar "Cargar registro" el componente   emite `loadContextEvent` con este identificador para que el host lo procese.
           * @default 1
          */
         "contextId": number;
         /**
-          * List of available context options. Can be provided by the host; defaults to the three built-in options.
+          * List of available context options. Can be provided by the host; defaults to the three built-in options. Marked mutable so the component can update it from the UI (demo mode).
           * @default [     { id: 1, value: '---------', useMock: false },     { id: 2, value: 'Usar HTTP', useMock: false },     { id: 3, value: 'Usar Data', useMock: true },   ]
          */
         "contextOptions": ContextOption[];
@@ -24,9 +28,10 @@ export namespace Components {
          */
         "delayMs": number;
         /**
-          * Optional initial headers provided by the host
+          * Optional initial headers provided by the host (made mutable so component may edit them)
+          * @default {}
          */
-        "headers"?: Record<string, string>;
+        "headers": Record<string, string>;
         /**
           * Codes that populate the Código HTTP select. Can be set by the host as a prop.
           * @default [200, 204, 400, 500]
@@ -48,7 +53,7 @@ export namespace Components {
         /**
           * @default ''
          */
-        "name": string;
+        "nameMock": string;
         /**
           * @default '{}'
          */
@@ -73,7 +78,8 @@ export interface MyComponentCustomEvent<T> extends CustomEvent<T> {
 }
 declare global {
     interface HTMLMyComponentElementEventMap {
-        "saveContextEvent": any;
+        "saveMockSchemaEvent": MockSchema;
+        "saveMockBodyEvent": MockBody;
         "saveHeadersEvent": Record<string, string>;
         "loadContextEvent": number;
         "contextTypeChangeEvent": ContextOption;
@@ -100,12 +106,16 @@ declare global {
 declare namespace LocalJSX {
     interface MyComponent {
         /**
+          * @default 0
+         */
+        "activeTab"?: number;
+        /**
           * ID del contexto que se usará para cargar un registro específico. - Puede ser establecido por el host como una propiedad (`contextId`). - Se utiliza en la pestaña "Cargar"; al pulsar "Cargar registro" el componente   emite `loadContextEvent` con este identificador para que el host lo procese.
           * @default 1
          */
         "contextId"?: number;
         /**
-          * List of available context options. Can be provided by the host; defaults to the three built-in options.
+          * List of available context options. Can be provided by the host; defaults to the three built-in options. Marked mutable so the component can update it from the UI (demo mode).
           * @default [     { id: 1, value: '---------', useMock: false },     { id: 2, value: 'Usar HTTP', useMock: false },     { id: 3, value: 'Usar Data', useMock: true },   ]
          */
         "contextOptions"?: ContextOption[];
@@ -114,7 +124,8 @@ declare namespace LocalJSX {
          */
         "delayMs"?: number;
         /**
-          * Optional initial headers provided by the host
+          * Optional initial headers provided by the host (made mutable so component may edit them)
+          * @default {}
          */
         "headers"?: Record<string, string>;
         /**
@@ -138,15 +149,16 @@ declare namespace LocalJSX {
         /**
           * @default ''
          */
-        "name"?: string;
+        "nameMock"?: string;
         "onContextTypeChangeEvent"?: (event: MyComponentCustomEvent<ContextOption>) => void;
         "onLoadContextEvent"?: (event: MyComponentCustomEvent<number>) => void;
         "onReloadEvent"?: (event: MyComponentCustomEvent<void>) => void;
+        "onSaveHeadersEvent"?: (event: MyComponentCustomEvent<Record<string, string>>) => void;
+        "onSaveMockBodyEvent"?: (event: MyComponentCustomEvent<MockBody>) => void;
         /**
           * Events emitted so parent implementations can listen
          */
-        "onSaveContextEvent"?: (event: MyComponentCustomEvent<any>) => void;
-        "onSaveHeadersEvent"?: (event: MyComponentCustomEvent<Record<string, string>>) => void;
+        "onSaveMockSchemaEvent"?: (event: MyComponentCustomEvent<MockSchema>) => void;
         /**
           * @default '{}'
          */

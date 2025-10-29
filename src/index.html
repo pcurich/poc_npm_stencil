@@ -1,29 +1,714 @@
 <!DOCTYPE html>
-<html dir="ltr" lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
-    <title>Stencil Component Starter</title>
+<html dir="ltr" lang="es">
 
-    <script type="module" src="/build/poc-http-mock.esm.js"></script>
-    <script nomodule src="/build/poc-http-mock.js"></script>
-  </head>
-  <body>
-    <my-component></my-component>
-    <script>
-      // Example: listen to contextTypeChangeEvent emitted by <my-component>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
+  <title>POC Stencil - MyComponent Demo</title>
+
+  <script type="module" src="/build/poc-http-mock.esm.js"></script>
+  <script nomodule src="/build/poc-http-mock.js"></script>
+  <link rel="stylesheet" href="./styles.css">
+
+  <script>
+    // Ripple helper: attach to buttons with .btn or simple buttons
+    (function () {
+      function makeRipple(e) {
+        const btn = e.currentTarget;
+        const rect = btn.getBoundingClientRect();
+        const span = document.createElement('span');
+        span.className = 'effect';
+        const size = Math.max(rect.width, rect.height) * 1.2;
+        span.style.width = span.style.height = size + 'px';
+        span.style.left = (e.clientX - rect.left - size / 2) + 'px';
+        span.style.top = (e.clientY - rect.top - size / 2) + 'px';
+        btn.appendChild(span);
+        setTimeout(() => span.remove(), 650);
+      }
+
       window.addEventListener('DOMContentLoaded', () => {
-        const comp = document.querySelector('my-component');
-        if (!comp) return;
-        comp.addEventListener('contextTypeChangeEvent', (ev) => {
-          // ev is a CustomEvent; the payload is in ev.detail
-          // Log full ContextOption object
-          // Example: { id: number, value: string, useMock: boolean }
-          // You can react here (save to localStorage, call APIs, reload app, etc.)
-          // eslint-disable-next-line no-console
-          console.log('contextTypeChangeEvent received:', ev.detail);
+        const selector = '.btn, button';
+        document.querySelectorAll(selector).forEach(b => {
+          b.classList.add('ripple');
+          b.addEventListener('click', makeRipple);
         });
       });
-    </script>
-  </body>
+    })();
+  </script>
+</head>
+
+<body>
+  <h1>Demo: <code>&lt;my-component&gt;</code></h1>
+
+  <div class="tabs" role="tablist" aria-label="Pestañas de demo">
+    <div class="tab active" data-tab="spec">1 · Especificación</div>
+    <div class="tab" data-tab="demo">2 · Demo interactiva</div>
+    <div class="tab" data-tab="usecases">3 · Casos de uso</div>
+  </div>
+
+  <div id="spec" class="panel">
+    <h3>Componente y Estructura de datos</h3>
+    <p class="muted">A continuación se listan los atributos/props expuestos y los eventos que el host puede escuchar.
+    </p>
+    <h4>Props (nombres y tipos)</h4>
+    <p class="muted">Tabla con nombre de variable, tipo, descripción, valores posibles y ejemplo.</p>
+    <div class="table-container">
+      <table class="spec-table" aria-describedby="spec-desc">
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th>Valores posi bles</th>
+            <th>Ejemplo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>contextId</code></td>
+            <td><code>number</code></td>
+            <td>ID para cargar un registro específico desde la pestaña "Cargar".</td>
+            <td>enteros positivos</td>
+            <td><code>1</code></td>
+          </tr>
+          <tr>
+            <td><code>selectedContext</code></td>
+            <td><code>ContextOption | undefined</code></td>
+            <td>Contexto actualmente seleccionado (proporcionado por el host o seleccionado por el usuario).</td>
+            <td><code>{ id:number, value:string, useMock?:boolean }</code></td>
+            <td><code>{ id:3, value: 'Usar Data', useMock: true }</code></td>
+          </tr>
+          <tr>
+            <td><code>contextOptions</code></td>
+            <td><code>ContextOption[]</code></td>
+            <td>Array de opciones que el select de contexto muestra.</td>
+            <td>Lista de objetos contextOption</td>
+            <td><code>[{ id:1, value:'default' }]</code></td>
+          </tr>
+          <tr>
+            <td><code>httpMethods</code></td>
+            <td><code>HttpMethod[]</code></td>
+            <td>Métodos HTTP disponibles para seleccionar en el formulario Mock.</td>
+            <td><code>'GET','POST','PUT','DELETE','PATCH'</code></td>
+            <td><code>['GET','POST']</code></td>
+          </tr>
+          <tr>
+            <td><code>httpCodeResponse</code></td>
+            <td><code>number[]</code></td>
+            <td>Códigos HTTP que llenan el select de código de respuesta.</td>
+            <td>Ej: <code>[200,201,400,404,500]</code></td>
+            <td><code>[200,201,400]</code></td>
+          </tr>
+          <tr>
+            <td><code>headers</code></td>
+            <td><code>Record&lt;string,string&gt; (opcional)</code></td>
+            <td>Cabeceras iniciales que proporciona el host; se sincronizan al editor de cabeceras.</td>
+            <td>Cualquier par clave/valor</td>
+            <td><code>{ 'Authorization': 'Bearer abc' }</code></td>
+          </tr>
+
+          <!-- Form / Mock props -->
+          <tr>
+            <td><code>nameMock</code></td>
+            <td><code>string</code></td>
+            <td>Nombre identificador del mock.</td>
+            <td>Cualquier texto</td>
+            <td><code>'simple-mock'</code></td>
+          </tr>
+          <tr>
+            <td><code>serviceCode</code></td>
+            <td><code>string</code></td>
+            <td>Identificador del servicio relacionado al mock.</td>
+            <td>Texto</td>
+            <td><code>'svc-user'</code></td>
+          </tr>
+          <tr>
+            <td><code>url</code></td>
+            <td><code>string</code></td>
+            <td>Endpoint (o patrón) al que debe responder el mock.</td>
+            <td>Rutas tipo REST</td>
+            <td><code>'/api/users/:id'</code></td>
+          </tr>
+          <tr>
+            <td><code>httpMethod</code></td>
+            <td><code>HttpMethod</code></td>
+            <td>Método HTTP que simulará la respuesta.</td>
+            <td><code>'GET'|'POST'|'PUT'|'DELETE'|'PATCH'</code></td>
+            <td><code>'GET'</code></td>
+          </tr>
+          <tr>
+            <td><code>httpCodeResponseValue</code></td>
+            <td><code>number</code></td>
+            <td>Código de estado HTTP que devolverá el mock.</td>
+            <td>200, 201, 400, 404, 500 ...</td>
+            <td><code>200</code></td>
+          </tr>
+          <tr>
+            <td><code>delayMs</code></td>
+            <td><code>number</code></td>
+            <td>Delay en milisegundos para simular latencia.</td>
+            <td>0 o positivo</td>
+            <td><code>1000</code></td>
+          </tr>
+          <tr>
+            <td><code>responseBody</code></td>
+            <td><code>string</code></td>
+            <td>Cadena que representa el cuerpo de la respuesta (JSON o texto).</td>
+            <td>JSON string o texto plano</td>
+            <td><code>'{"ok":true}'</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Eventos disponibles (emitted events)</h4>
+    <p class="muted">Lista de eventos que el componente puede emitir. Cada evento incluye nombre, tipo del payload,
+      descripción, valores posibles y un ejemplo.</p>
+    <div class="table-container">
+      <table class="spec-table" aria-describedby="events-desc">
+        <thead>
+          <tr>
+            <th>Evento</th>
+            <th>Tipo (payload)</th>
+            <th>Descripción</th>
+            <th>Valores posibles</th>
+            <th>Ejemplo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>saveMockSchemaEvent</code></td>
+            <td><code>MockSchema</code></td>
+            <td>Emitido al guardar la metadata/configuración del mock desde la pestaña <em>Mock</em> (sin el cuerpo).
+            </td>
+            <td>Objeto con campos:
+              <code>nameMock, url, httpMethod, httpCodeResponseValue, serviceCode?, delayMs?, headers?</code>
+            </td>
+            <td>
+              <pre class="spec">{
+  "nameMock": "demo-mock",
+  "url": "/api/demo",
+  "httpMethod": "GET",
+  "httpCodeResponseValue": 200,
+  "serviceCode": "svc-demo",
+  "delayMs": 0,
+  "headers": { "Authorization": "Bearer ..." }
+}</pre>
+            </td>
+          </tr>
+          <tr>
+            <td><code>saveMockBodyEvent</code></td>
+            <td><code>MockBody</code></td>
+            <td>Emitido al guardar el cuerpo/respuesta desde la pestaña <em>Body</em>. Contiene el JSON/texto que debe
+              devolver el mock.</td>
+            <td>Objeto con <code>responseBody: string</code> (JSON string o texto)</td>
+            <td>
+              <pre class="spec">{ "responseBody": "{\"ok\":true}" }</pre>
+            </td>
+          </tr>
+          <tr>
+            <td><code>saveHeadersEvent</code></td>
+            <td><code>Record&lt;string,string&gt;</code></td>
+            <td>Emitido cuando el usuario guarda/actualiza las cabeceras en el editor de <em>Headers</em>.</td>
+            <td>Objeto clave/valor con las cabeceras</td>
+            <td><code>{ "Authorization": "Bearer abc" }</code></td>
+          </tr>
+          <tr>
+            <td><code>loadContextEvent</code></td>
+            <td><code>number</code></td>
+            <td>Emitido para solicitar al host que cargue un contexto/registro por su ID (pestaña <em>Load</em>).</td>
+            <td>ID numérico (enteros positivos)</td>
+            <td><code>42</code></td>
+          </tr>
+          <tr>
+            <td><code>contextTypeChangeEvent</code></td>
+            <td><code>ContextOption</code></td>
+            <td>Emitido cuando el usuario cambia el tipo de contexto (select). Incluye el objeto
+              <code>ContextOption</code> seleccionado.
+            </td>
+            <td><code>{ id:number, value:string, useMock?:boolean }</code></td>
+            <td><code>{ id:3, value: 'Usar Data', useMock: true }</code></td>
+          </tr>
+          <tr>
+            <td><code>reloadEvent</code></td>
+            <td><code>void</code></td>
+            <td>Emitido para solicitar al host que realice una recarga/control externo (sin payload).</td>
+            <td>Sin payload</td>
+            <td><em>no payload</em></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="small muted">Nota: pasar objetos complejos como <code>headers</code> se hace mejor con asignación por
+      propiedad en JS (element.headers = {...}) en vez de atributos HTML.</p>
+  </div>
+
+  <div id="demo" class="panel" style="display:none">
+    <h3>Demo interactiva</h3>
+    <p class="muted">Usa los controles para configurar el componente y observa la consola integrada donde se mostrarán
+      los eventos emitidos.</p>
+
+    <div class="row">
+      <label>Instancia del componente</label>
+      <div>
+        <my-component id="demo-comp"></my-component>
+      </div>
+    </div>
+
+    <div class="example">
+      <h4>Configurar props (por sección)</h4>
+      <p class="muted small">Cada sección del componente (Context, Load, Mock, Headers, Body) expone props y emite
+        eventos. Usa las pestañas a la izquierda para navegar entre secciones.</p>
+
+      <div class="section-tabs">
+        <div class="vertical-tabs" role="tablist" aria-orientation="vertical">
+          <button class="tab-button active" data-section="context">Context</button>
+          <button class="tab-button" data-section="load">Load</button>
+          <button class="tab-button" data-section="mock">Mock</button>
+          <button class="tab-button" data-section="headers">Headers</button>
+          <button class="tab-button" data-section="body">Body</button>
+        </div>
+
+        <div class="tab-content">
+          <div class="tab-pane active" data-section="context">
+            <div class="panel" style="margin-bottom:12px">
+              <h5 style="margin:0 0 8px 0">Context</h5>
+              <div class="row" style="flex-direction:column; gap:8px">
+                <div class="small muted">Proporciona un array JSON de <code>ContextOption</code> para asignarlo a la
+                  propiedad <code>contextOptions</code> del componente.</div>
+                <textarea id="inp-context-options" rows="4"
+                  placeholder='Ej: [{ "id":1, "value":"default" }, { "id":2, "value":"Usar HTTP", "useMock":false }]'
+                  style="width:100%; box-sizing:border-box; display:block; min-height:80px; max-width:100%; resize:vertical;"></textarea>
+                <div>
+                  <button id="apply-prop-context" class="btn">Aplicar propiedad (contextOptions)</button>
+                  <button id="validate-prop-context" class="btn secondary">Validar JSON</button>
+                </div>
+              </div>
+              <div class="muted small">Eventos (escuchados): <code>contextTypeChangeEvent</code></div>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-section="load">
+            <div class="panel" style="margin-bottom:12px">
+              <h5 style="margin:0 0 8px 0">Load</h5>
+              <div class="row">
+                <label for="inp-load-id">contextId</label>
+                <input id="inp-load-id" type="number" min="1" placeholder="ID a cargar" />
+                <button id="apply-attr-load" class="btn secondary">Aplicar atributo</button>
+                <button id="apply-prop-load" class="btn">Aplicar propiedad</button>
+              </div>
+              <div class="muted small">Eventos (emitidos por el componente): <code>loadContextEvent</code></div>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-section="mock">
+            <div class="panel" style="margin-bottom:12px">
+              <h5 style="margin:0 0 8px 0">Mock</h5>
+              <div class="row">
+                <label for="inp-name-mock">nameMock</label>
+                <input id="inp-name-mock" type="text" placeholder="Nombre del mock" />
+              </div>
+              <div class="row">
+                <label for="inp-service">serviceCode</label>
+                <input id="inp-service" type="text" placeholder="svc-user" />
+              </div>
+              <div class="row">
+                <label for="inp-url">url</label>
+                <input id="inp-url" type="text" placeholder="/api/ejemplo" />
+              </div>
+              <div class="row">
+                <label for="inp-method">httpMethod</label>
+                <select id="inp-method">
+                  <option>GET</option>
+                  <option>POST</option>
+                  <option>PUT</option>
+                  <option>DELETE</option>
+                </select>
+              </div>
+              <div class="row">
+                <label for="inp-httpcodelist">httpCodeResponse</label>
+                <input id="inp-httpcodelist" type="text" placeholder="200,204,404,409,509" />
+                <button id="apply-httpcodelist" class="btn">Aplicar códigos</button>
+              </div>
+              <div class="row">
+                <label for="inp-httpcode">httpCodeResponseValue</label>
+                <select id="inp-httpcode">
+                  <option>200</option>
+                  <option>201</option>
+                  <option>400</option>
+                  <option>404</option>
+                  <option>500</option>
+                </select>
+              </div>
+              <div class="row">
+                <label for="inp-delay">delayMs</label>
+                <input id="inp-delay" type="number" placeholder="0" min="0" />
+              </div>
+              <div class="row">
+                <button id="apply-attr-mock" class="btn secondary">Aplicar atributos (mock)</button>
+                <button id="apply-prop-mock" class="btn">Aplicar propiedades (mock)</button>
+              </div>
+              <div class="muted small">Eventos (emitidos por el componente): <code>saveMockSchemaEvent</code></div>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-section="headers">
+            <div class="panel" style="margin-bottom:12px">
+              <h5 style="margin:0 0 8px 0">Headers</h5>
+              <div class="row">
+                <label for="hdr-key">Agregar header (key)</label>
+                <input id="hdr-key" type="text" placeholder="Authorization" />
+                <label for="hdr-val">valor</label>
+                <input id="hdr-val" type="text" placeholder="Bearer token123" />
+                <button id="add-hdr" class="btn secondary">Añadir header (prop)</button>
+              </div>
+              <div class="row">
+                <!-- Header application is handled via the 'Añadir header (prop)' button above or via the demo code -->
+              </div>
+              <div class="muted small">Eventos (emitidos por el componente): <code>saveHeadersEvent</code></div>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-section="body">
+            <div class="panel" style="margin-bottom:12px">
+              <h5 style="margin:0 0 8px 0">Body</h5>
+              <div class="row">
+                <label for="inp-body">responseBody</label>
+                <textarea id="inp-body" rows="3" placeholder='{"ok":true}'></textarea>
+              </div>
+              <div class="row">
+                <button id="apply-attr-body" class="btn secondary">Aplicar atributo (body)</button>
+                <button id="apply-prop-body" class="btn">Aplicar propiedad (body)</button>
+              </div>
+              <div class="muted small">Eventos (emitidos por el componente): <code>saveMockBodyEvent</code></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <label>Acciones</label>
+        <button id="emit-save" class="btn secondary">Simular eventos (nota)</button>
+        <button id="clear-logs" class="btn secondary">Limpiar consola</button>
+      </div>
+
+      <p class="muted small">Explicación: "Aplicar como atributo" usa <code>setAttribute</code> (strings), "Aplicar como
+        propiedad" asigna directamente la propiedad JS del elemento (permite pasar objetos).</p>
+    </div>
+
+    <h4>Consola (event listener)</h4>
+    <div id="console" class="console"></div>
+  </div>
+
+  <div id="usecases" class="panel" style="display:none">
+    <h3>Casos de uso</h3>
+
+    <h4>1) Caso básico</h4>
+    <p class="muted">Escenario: un mock sencillo que responde 200 con un body estático.</p>
+    <pre class="spec">// Código conceptual (usando propiedad JS)
+const el = document.createElement('my-component');
+el.name = 'simple-mock';
+el.url = '/api/simple';
+el.httpMethod = 'GET';
+el.httpCodeResponseValue = 200;
+el.responseBody = '{"ok":true, "msg":"OK"}';
+document.body.appendChild(el);
+
+// Escuchar eventos
+el.addEventListener('saveMockSchemaEvent', e => console.log('Saved schema', e.detail));
+el.addEventListener('saveMockBodyEvent', e => console.log('Saved body', e.detail));</pre>
+
+    <h4>2) Caso complejo</h4>
+    <p class="muted">Escenario: mock complejo con headers, delay y uso de eventos para guardar configuraciones remotas.
+    </p>
+    <pre class="spec">const complex = document.createElement('my-component');
+complex.name = 'complex-mock';
+complex.url = '/api/complex/{id}';
+complex.httpMethod = 'POST';
+complex.httpCodeResponseValue = 201;
+complex.delayMs = 1200;
+complex.responseBody = JSON.stringify({ created: true });
+// headers como objeto (propiedad JS, recomendado)
+complex.headers = { 'Authorization': 'Bearer secret', 'X-Trace-Id': 'abc-123' };
+document.body.appendChild(complex);
+
+// host escucha cambios de headers y los persiste
+complex.addEventListener('saveHeadersEvent', (ev) => {
+  console.log('Headers guardadas por el componente:', ev.detail);
+  // Ej: salvar en storage o llamar API
+});
+
+// También se puede reaccionar a contextTypeChangeEvent
+complex.addEventListener('contextTypeChangeEvent', (ev) => console.log('Context type changed:', ev.detail));</pre>
+  </div>
+
+  <script>
+    (function () {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(t => t.addEventListener('click', () => {
+        tabs.forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        const tab = t.getAttribute('data-tab');
+        document.getElementById('spec').style.display = tab === 'spec' ? '' : 'none';
+        document.getElementById('demo').style.display = tab === 'demo' ? '' : 'none';
+        document.getElementById('usecases').style.display = tab === 'usecases' ? '' : 'none';
+      }));
+
+      function appendLog(msg) {
+        const c = document.getElementById('console');
+        const time = new Date().toLocaleTimeString();
+        // Use textContent so newlines are preserved and HTML is not injected
+        c.textContent = (c.textContent || '') + '[' + time + '] ' + msg + '\n';
+        c.scrollTop = c.scrollHeight;
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        const demoComp = document.getElementById('demo-comp');
+        const inpName = document.getElementById('inp-name-mock');
+        const inpUrl = document.getElementById('inp-url');
+        const inpService = document.getElementById('inp-service');
+        const inpHttpCode = document.getElementById('inp-httpcode');
+        const inpDelay = document.getElementById('inp-delay');
+        const inpBody = document.getElementById('inp-body');
+        const inpMethod = document.getElementById('inp-method');
+        const inpHttpCodeList = document.getElementById('inp-httpcodelist');
+        const applyHttpCodeList = document.getElementById('apply-httpcodelist');
+        const hdrKey = document.getElementById('hdr-key');
+        const hdrVal = document.getElementById('hdr-val');
+        const addHdr = document.getElementById('add-hdr');
+        const emitSave = document.getElementById('emit-save');
+        const clearLogs = document.getElementById('clear-logs');
+        // per-section apply buttons
+        const inpContextOptions = document.getElementById('inp-context-options');
+        const applyPropContext = document.getElementById('apply-prop-context');
+        const validatePropContext = document.getElementById('validate-prop-context');
+
+        const inpLoadId = document.getElementById('inp-load-id');
+        const applyAttrLoad = document.getElementById('apply-attr-load');
+        const applyPropLoad = document.getElementById('apply-prop-load');
+
+        const applyAttrMock = document.getElementById('apply-attr-mock');
+        const applyPropMock = document.getElementById('apply-prop-mock');
+
+  // header apply buttons removed from the UI; header manipulation is done via the add-hdr control
+
+        const applyAttrBody = document.getElementById('apply-attr-body');
+        const applyPropBody = document.getElementById('apply-prop-body');
+
+        if (!demoComp) { appendLog('No se encontró <my-component id="demo-comp">'); return; }
+
+        // Attach event listeners to demo component and log them
+        const eventsToLog = ['saveMockSchemaEvent', 'saveMockBodyEvent', 'saveHeadersEvent', 'loadContextEvent', 'contextTypeChangeEvent', 'reloadEvent'];
+        eventsToLog.forEach(evName => {
+          demoComp.addEventListener(evName, (ev) => {
+            appendLog(evName + ' -> ' + JSON.stringify(ev.detail));
+          });
+        });
+
+        addHdr.addEventListener('click', () => {
+          const k = hdrKey.value && hdrKey.value.trim();
+          const v = hdrVal.value && hdrVal.value.trim();
+          if (!k) { appendLog('Header: la clave está vacía'); return; }
+          // Asegurar que headers es un objeto
+          try {
+            demoComp.headers = { ...demoComp.headers, [k]: v || '' }; // asignación por propiedad
+            appendLog('Header añadido: ' + k + ': ' + v);
+          } catch (err) {
+            appendLog('Error asignando headers: ' + String(err));
+          }
+          hdrKey.value = ''; hdrVal.value = '';
+        });
+
+        // Context section apply handlers
+        if (validatePropContext) validatePropContext.addEventListener('click', () => {
+          if (!inpContextOptions) { appendLog('No se encontró el textarea de opciones de contexto'); return; }
+          try {
+            const parsed = JSON.parse(inpContextOptions.value);
+            if (!Array.isArray(parsed)) { appendLog('JSON inválido: se esperaba un array de ContextOption'); return; }
+            appendLog('JSON válido: array con ' + parsed.length + ' elementos');
+          } catch (err) {
+            appendLog('JSON inválido: ' + String(err));
+          }
+        });
+
+        if (applyPropContext) applyPropContext.addEventListener('click', () => {
+          if (!inpContextOptions) { appendLog('No se encontró el textarea de opciones de contexto'); return; }
+          try {
+            const parsed = JSON.parse(inpContextOptions.value);
+            if (!Array.isArray(parsed)) { appendLog('No se aplicó: se esperaba un array de ContextOption'); return; }
+            // Basic validation: each item must have id:number and value:string
+            const ok = parsed.every(item => item && typeof item.id === 'number' && typeof item.value === 'string');
+            if (!ok) { appendLog('No se aplicó: cada elemento debe tener { id:number, value:string, useMock?:boolean }'); return; }
+            demoComp.contextOptions = parsed;
+            appendLog('Propiedad contextOptions aplicada con ' + parsed.length + ' opciones');
+          } catch (err) {
+            appendLog('Error parseando JSON: ' + String(err));
+          }
+        });
+
+        // Load section
+        if (applyAttrLoad) applyAttrLoad.addEventListener('click', () => {
+          if (inpLoadId && inpLoadId.value) demoComp.setAttribute('context-id', inpLoadId.value);
+          appendLog('Load attribute applied: context-id=' + (inpLoadId && inpLoadId.value));
+        });
+        if (applyPropLoad) applyPropLoad.addEventListener('click', () => {
+          if (inpLoadId && inpLoadId.value) demoComp.contextId = Number(inpLoadId.value);
+          appendLog('Load property applied: contextId=' + (inpLoadId && inpLoadId.value));
+        });
+
+        // Mock section
+        if (applyAttrMock) applyAttrMock.addEventListener('click', () => {
+          if (inpName && inpName.value) demoComp.setAttribute('name-mock', inpName.value);
+          if (inpService && inpService.value) demoComp.setAttribute('service-code', inpService.value);
+          if (inpUrl && inpUrl.value) demoComp.setAttribute('url', inpUrl.value);
+          if (inpMethod && inpMethod.value) demoComp.setAttribute('http-method', inpMethod.value);
+          if (inpHttpCode && inpHttpCode.value) demoComp.setAttribute('http-code-response-value', inpHttpCode.value);
+          if (inpDelay && inpDelay.value) demoComp.setAttribute('delay-ms', inpDelay.value);
+          appendLog('Mock attributes applied');
+        });
+        if (applyPropMock) applyPropMock.addEventListener('click', () => {
+          if (inpName && inpName.value) demoComp.nameMock = inpName.value;
+          if (inpService && inpService.value) demoComp.serviceCode = inpService.value;
+          if (inpUrl && inpUrl.value) demoComp.url = inpUrl.value;
+          if (inpMethod && inpMethod.value) demoComp.httpMethod = inpMethod.value;
+          if (inpHttpCode && inpHttpCode.value) demoComp.httpCodeResponseValue = Number(inpHttpCode.value);
+          if (inpDelay && inpDelay.value) demoComp.delayMs = Number(inpDelay.value);
+          appendLog('Mock properties applied');
+        });
+
+        // Helper to refresh the mock http code select (`#inp-httpcode`) from a given array
+        function refreshMockHttpCodeSelect(arr) {
+          try {
+            const sel = document.getElementById('inp-httpcode');
+            if (!sel) return;
+            sel.innerHTML = '';
+            arr.forEach((c) => {
+              const o = document.createElement('option');
+              o.value = String(c);
+              o.text = String(c);
+              sel.appendChild(o);
+            });
+          } catch (err) {
+            appendLog('Error actualizando select de códigos: ' + String(err));
+          }
+        }
+
+        // Apply http code list from the input (comma-separated numbers)
+        if (applyHttpCodeList) applyHttpCodeList.addEventListener('click', () => {
+          if (!inpHttpCodeList) { appendLog('No se encontró el input de lista de códigos'); return; }
+          const raw = (inpHttpCodeList.value || '').trim();
+          if (!raw) { appendLog('Lista vacía: escribe códigos separados por comas'); return; }
+          try {
+            const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
+            const nums = parts.map(p => Number(p)).filter(n => Number.isInteger(n) && n >= 100);
+            if (!nums.length) { appendLog('No se encontró ningún código válido (enteros >=100)'); return; }
+            // unique + sort
+            const unique = Array.from(new Set(nums)).sort((a, b) => a - b);
+            // assign to the demo component's mutable prop
+            try { demoComp.httpCodeResponse = unique; } catch (err) { appendLog('Error asignando httpCodeResponse: ' + String(err)); }
+            // refresh the select to show new values
+            refreshMockHttpCodeSelect(unique);
+            // ensure value selected is the first one (or leave existing if present)
+            const sel = document.getElementById('inp-httpcode');
+            if (sel) sel.value = String(unique[0]);
+            appendLog('Propiedad httpCodeResponse aplicada: [' + unique.join(',') + ']');
+          } catch (err) {
+            appendLog('Error parseando la lista de códigos: ' + String(err));
+          }
+        });
+
+        // Initialize the select from demoComp.htt  pCodeResponse if present
+        try {
+          const initial = Array.isArray(demoComp.httpCodeResponse) ? demoComp.httpCodeResponse : null;
+          if (initial && initial.length) refreshMockHttpCodeSelect(initial);
+        } catch (err) {
+          // ignore
+        }
+
+        // Body section
+        if (applyAttrBody) applyAttrBody.addEventListener('click', () => {
+          if (inpBody && inpBody.value) demoComp.setAttribute('response-body', inpBody.value);
+          appendLog('Body attribute applied');
+        });
+        if (applyPropBody) applyPropBody.addEventListener('click', () => {
+          if (inpBody && inpBody.value) demoComp.responseBody = inpBody.value;
+          appendLog('Body property applied');
+        });
+
+        emitSave.addEventListener('click', () => {
+          // Simular que el componente emitiera ambos eventos (para demo)
+          try {
+            const schema = {
+              nameMock: inpName.value || 'demo-mock',
+              url: inpUrl.value || '/api/demo',
+              httpMethod: inpMethod.value || 'GET',
+              httpCodeResponseValue: 200,
+              serviceCode: 'svc-demo',
+              delayMs: 0,
+            };
+            const body = { responseBody: '{"ok":true, "demo":true}' };
+            demoComp.dispatchEvent(new CustomEvent('saveMockSchemaEvent', { detail: schema }));
+            demoComp.dispatchEvent(new CustomEvent('saveMockBodyEvent', { detail: body }));
+            appendLog('Simulados: saveMockSchemaEvent y saveMockBodyEvent emitidos por demo-comp');
+          } catch (err) {
+            appendLog('Error simulando eventos: ' + String(err));
+          }
+        });
+
+        clearLogs.addEventListener('click', () => { document.getElementById('console').innerText = ''; });
+
+        // Example: also log contextTypeChangeEvent from window-level (global)
+        demoComp.addEventListener('contextTypeChangeEvent', ev => appendLog('contextTypeChangeEvent (detalle): ' + JSON.stringify(ev.detail)));
+        // Vertical tabs behaviour for the demo sections
+        // Vertical tabs behaviour for the demo sections — also set demoComp.activeTab so the component
+        // internal tab switches to the matching pane (0..4).
+        document.querySelectorAll('.tab-button').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const section = (btn.getAttribute('data-section') || '').toLowerCase();
+            // toggle active button
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            // show corresponding pane
+            document.querySelectorAll('.tab-pane').forEach(p => {
+              if (p.getAttribute('data-section') === section) {
+                p.classList.add('active');
+              } else {
+                p.classList.remove('active');
+              }
+            });
+            // Map section name to component activeTab index
+            try {
+              if (demoComp) {
+                const map = { context: 0, load: 1, mock: 2, headers: 3, body: 4 };
+                if (section in map) demoComp.activeTab = map[section];
+              }
+            } catch (err) {
+              appendLog('Error setting demoComp.activeTab: ' + String(err));
+            }
+          });
+        });
+
+        // Initialize demo vertical tabs to match demoComp.activeTab (if set)
+        try {
+          const init = typeof demoComp.activeTab === 'number' ? Number(demoComp.activeTab) : null;
+          if (init !== null && !isNaN(init)) {
+            const reverseMap = ['context', 'load', 'mock', 'headers', 'body'];
+            const sec = reverseMap[init] || 'context';
+            // activate matching button and pane
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            const btn = document.querySelector(`.tab-button[data-section="${sec}"]`);
+            if (btn) btn.classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(p => {
+              if (p.getAttribute('data-section') === sec) p.classList.add('active'); else p.classList.remove('active');
+            });
+          }
+        } catch (e) {
+          // ignore initialization errors
+        }
+      });
+    })();
+  </script>
+</body>
+
 </html>

@@ -1,5 +1,5 @@
 import { Component, Prop, State, h, Event, EventEmitter, Watch } from '@stencil/core';
-import { ContextOption, HttpMethod } from './public-pi';
+import { ContextOption, HttpMethod, MockSchema, MockBody } from './public-pi';
 
 @Component({
   tag: 'my-component',
@@ -12,7 +12,7 @@ export class MyComponent {
   @State() position: { bottom: number; right: number } = { bottom: 32, right: 32 };
   private dragging: boolean = false;
   private dragStart = { x: 0, y: 0, bottom: 32, right: 32 };
-  @State() activeTab: number = 0;
+  @Prop({ mutable: true }) activeTab: number = 0;
 
 
   /**
@@ -25,12 +25,26 @@ export class MyComponent {
   /** The current context type can be provided by the host as a ContextOption prop */
   @Prop() selectedContext?: ContextOption;
 
-  /** List of available context options. Can be provided by the host; defaults to the three built-in options. */
-  @Prop() contextOptions: ContextOption[] = [
+  /** List of available context options. Can be provided by the host; defaults to the three built-in options.
+   *  Marked mutable so the component can update it from the UI (demo mode).
+   */
+  @Prop({ mutable: true }) contextOptions: ContextOption[] = [
     { id: 1, value: '---------', useMock: false },
     { id: 2, value: 'Usar HTTP', useMock: false },
     { id: 3, value: 'Usar Data', useMock: true },
   ];
+
+  // Local editable copy of contextOptions used by the UI. Keep in sync with the prop.
+  @State() contextOptionsState: ContextOption[] = [];
+  @State() newContextValue: string = '';
+  @State() newContextUseMock: boolean = false;
+  @State() newContextId: number | '' = '';
+
+  @Watch('contextOptions')
+  protected contextOptionsChanged(newVal?: ContextOption[]) {
+    this.contextOptionsState = newVal ? [...newVal] : [];
+  }
+
 
   /** List of available HTTP methods. Can be provided by the host; defaults to the five built-in options. */
   @Prop() httpMethods: HttpMethod[] = [
@@ -42,13 +56,13 @@ export class MyComponent {
   ];
 
   /** Codes that populate the Código HTTP select. Can be set by the host as a prop. */
-  @Prop() httpCodeResponse: number[] = [200, 204, 400, 500];
+  @Prop({ mutable: true }) httpCodeResponse: number[] = [200, 204, 400, 500];
 
-  /** Optional initial headers provided by the host */
-  @Prop() headers?: Record<string, string>;
+  /** Optional initial headers provided by the host (made mutable so component may edit them) */
+  @Prop({ mutable: true }) headers: Record<string, string> = {};
 
   // form fields
-  @Prop() name: string = '';
+  @Prop() nameMock: string = '';
   @Prop() serviceCode: string = '';
   @Prop() url: string = '';
   @Prop() httpMethod: HttpMethod = 'GET';
@@ -56,25 +70,17 @@ export class MyComponent {
   @Prop() delayMs: number = 0;
   @Prop() responseBody: string = '{}';
 
-  // Internal header editor state
-  @State() headersState: Array<{ key: string; value: string }> = [];
+  // Inputs for header editor
   @State() newHeaderKey: string = '';
   @State() newHeaderValue: string = '';
-
-  @Watch('headers')
-  protected headersChanged(newVal?: Record<string, string>) {
-    // Sync host-provided headers into internal array form
-    if (!newVal) {
-      this.headersState = [];
-      return;
-    }
-    this.headersState = Object.keys(newVal).map((k) => ({ key: k, value: newVal[k] }));
-  }
 
   private floatingForm?: HTMLElement;
 
   /** Events emitted so parent implementations can listen */
-  @Event() saveContextEvent!: EventEmitter<any>;
+  // Emitted when mock metadata (schema) is saved from the Mock tab
+  @Event() saveMockSchemaEvent!: EventEmitter<MockSchema>;
+  // Emitted when the response body is saved from the Body tab
+  @Event() saveMockBodyEvent!: EventEmitter<MockBody>;
   @Event() saveHeadersEvent!: EventEmitter<Record<string, string>>;
   @Event() loadContextEvent!: EventEmitter<number>;
   @Event() contextTypeChangeEvent!: EventEmitter<ContextOption>;
@@ -113,8 +119,9 @@ export class MyComponent {
   // Initialize selectedContext from prop or default
   componentWillLoad() {
     this.selectedContext = this.selectedContext ?? this.contextOptions[0];
-    // initialize header editor state from host-provided headers
-    this.headersChanged(this.headers);
+    // headers is already a mutable prop and initialized to {} by default
+    // initialize editable context options copy
+    this.contextOptionsState = this.contextOptions ? [...this.contextOptions] : [];
   }
 
   // Called when the context type select changes; receives the selected ContextOption (or undefined)
@@ -133,25 +140,39 @@ export class MyComponent {
 
   // Build payload depending on active tab and emit save event
   private saveContext = () => {
-    // reference floatingForm so the variable is considered used (avoids unused var lint)
-    void this.floatingForm;
-    let payload: any = null;
+  // reference floatingForm so the variable is considered used (avoids unused var lint)
+  void this.floatingForm;
     if (this.activeTab === 2) {
-      payload = {
-        code: Number(this.httpCodeResponseValue),
+      // Build schema payload (metadata without the body)
+      const headersObj: Record<string, string> = {};
+      // Build from the current mutable headers prop
+      if (this.headers) {
+        Object.keys(this.headers).forEach((k) => (headersObj[k] = this.headers[k]));
+      }
+      const schema: MockSchema = {
+        nameMock: this.nameMock,
+        url: this.url,
+        httpMethod: this.httpMethod,
+        httpCodeResponseValue: Number(this.httpCodeResponseValue),
         serviceCode: this.serviceCode,
         delayMs: Number(this.delayMs),
+        headers: Object.keys(headersObj).length ? headersObj : undefined,
       };
-    } else if (this.activeTab === 3) {
-      try {
-        // normalize JSON
-        payload = { responseBody: JSON.stringify(JSON.parse(this.responseBody)) };
-      } catch (e) {
-        payload = { responseBody: this.responseBody };
-      }
+      this.saveMockSchemaEvent.emit(schema);
+      return;
     }
 
-    this.saveContextEvent.emit(payload);
+    if (this.activeTab === 4) {
+      let bodyPayload: MockBody;
+      try {
+        // try to ensure valid JSON string
+        bodyPayload = { responseBody: JSON.stringify(JSON.parse(this.responseBody)) };
+      } catch (e) {
+        bodyPayload = { responseBody: this.responseBody };
+      }
+      this.saveMockBodyEvent.emit(bodyPayload);
+      return;
+    }
   };
 
   // Add a header (or update existing) and notify host
@@ -172,13 +193,10 @@ export class MyComponent {
       }
     }
     if (!key) return;
-    const idx = this.headersState.findIndex((hdr) => hdr.key === key);
-    if (idx >= 0) {
-      // update
-      this.headersState = this.headersState.map((hdr, i) => (i === idx ? { key, value } : hdr));
-    } else {
-      this.headersState = [...this.headersState, { key, value }];
-    }
+    // Mutate the mutable prop `headers` by creating a shallow copy and assigning it.
+    const copy: Record<string, string> = { ...(this.headers || {}) };
+    copy[key] = value;
+    this.headers = { ...copy };
     // clear inputs
     this.newHeaderKey = '';
     this.newHeaderValue = '';
@@ -186,14 +204,15 @@ export class MyComponent {
   };
 
   private removeHeader = (key: string) => {
-    this.headersState = this.headersState.filter((hdr) => hdr.key !== key);
+    const copy: Record<string, string> = { ...(this.headers || {}) };
+    delete copy[key];
+    this.headers = copy;
     this.emitSaveHeaders();
   };
 
   private emitSaveHeaders = () => {
-    const obj: Record<string, string> = {};
-    this.headersState.forEach((hdr) => (obj[hdr.key] = hdr.value));
-    this.saveHeadersEvent.emit(obj);
+    // Emit the current headers object (may be empty)
+    this.saveHeadersEvent.emit(this.headers && Object.keys(this.headers).length ? this.headers : {});
   };
 
   private onInputNumber(ev: Event, key: 'contextId' | 'delayMs') {
@@ -234,11 +253,11 @@ export class MyComponent {
               id="contextType"
               onInput={(e) => {
                 const id = Number((e.target as HTMLSelectElement).value);
-                const opt = this.contextOptions.find((o) => o.id === id);
+                const opt = this.contextOptionsState.find((o) => o.id === id);
                 this.onContextTypeChange(opt);
               }}
             >
-              {this.contextOptions.map((option) => (
+              {this.contextOptionsState.map((option) => (
                 <option value={String(option.id)} selected={option.id === this.selectedContext?.id}>
                   {option.value}
                 </option>
@@ -270,20 +289,10 @@ export class MyComponent {
     return (
       <div>
         <form class="context-form">
-          <div class="form-row">
-            <label htmlFor="code">Código HTTP esperado:</label>
-            <select id="code" onInput={(e) => (this.httpCodeResponseValue = Number((e.target as HTMLSelectElement).value))}>
-              {this.httpCodeResponse.map((c) => (
-                <option value={String(c)} selected={c === this.httpCodeResponseValue}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
 
           <div class="form-row">
-            <label htmlFor="name">Nombre del mock:</label>
-            <input id="name" type="text" value={this.name} onInput={(e) => (this.name = (e.target as HTMLInputElement).value)} placeholder="Nombre del mock" />
+            <label htmlFor="nameMock">Nombre del mock:</label>
+            <input id="nameMock" type="text" value={this.nameMock} onInput={(e) => (this.nameMock = (e.target as HTMLInputElement).value)} placeholder="Nombre del mock" />
           </div>
 
           <div class="form-row">
@@ -308,8 +317,14 @@ export class MyComponent {
           </div>
 
           <div class="form-row">
-            <label htmlFor="httpCodeResponseValue">Código respuesta:</label>
-            <input id="httpCodeResponseValue" type="number" value={this.httpCodeResponseValue} onInput={(e) => (this.httpCodeResponseValue = Number((e.target as HTMLInputElement).value))} placeholder="Código de respuesta" />
+            <label htmlFor="httpCodeResponseValue">Código HTTP esperado:</label>
+            <select id="httpCodeResponseValue" onInput={(e) => (this.httpCodeResponseValue = Number((e.target as HTMLSelectElement).value))}>
+              {this.httpCodeResponse.map((c) => (
+                <option value={String(c)} selected={c === this.httpCodeResponseValue}>
+                  {c}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div class="form-row">
@@ -341,7 +356,7 @@ export class MyComponent {
             </button>
           </div>
 
-          {this.headersState.length > 0 && (
+          {Object.keys(this.headers).length > 0 && (
             <div class="form-row">
               <div class="headers-wrapper">
                 <table class="headers-table">
@@ -353,20 +368,20 @@ export class MyComponent {
                     </tr>
                   </thead>
                   <tbody>
-                    {this.headersState.map((hdr) => (
-                      <tr>
+                    {Object.keys(this.headers).map((k) => (
+                      <tr key={k}>
                         <td>
-                          <div class="cell-content" title={hdr.key} aria-label={hdr.key}>
-                            {hdr.key}
+                          <div class="cell-content" title={k} aria-label={k}>
+                            {k}
                           </div>
                         </td>
                         <td>
-                          <div class="cell-content" title={hdr.value} aria-label={hdr.value}>
-                            {hdr.value}
+                          <div class="cell-content" title={this.headers[k]} aria-label={this.headers[k]}>
+                            {this.headers[k]}
                           </div>
                         </td>
                         <td>
-                          <button type="button" class="remove-btn" onClick={() => this.removeHeader(hdr.key)} aria-label={`Eliminar ${hdr.key}`} title={`Eliminar ${hdr.key}`}>
+                          <button type="button" class="remove-btn" onClick={() => this.removeHeader(k)} aria-label={`Eliminar ${k}`} title={`Eliminar ${k}`}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                               <path d="M3 6h18" />
                               <path d="M8 6v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />

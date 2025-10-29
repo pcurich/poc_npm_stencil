@@ -1,0 +1,462 @@
+      /* Material-inspired theme variables */
+      :root {
+        --md-primary: #1e88e5;
+        /* blue-600 */
+        --md-on-primary: #ffffff;
+        --md-surface: #ffffff;
+        --md-bg: #f5f7fb;
+        --md-on-surface: #111827;
+        --md-muted: #6b7280;
+        --md-radius: 8px;
+        --md-elevation-1: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+        --md-elevation-2: 0 4px 6px rgba(16, 24, 40, 0.08), 0 2px 4px rgba(16, 24, 40, 0.06);
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        font-family: 'Roboto', 'Segoe UI', Inter, system-ui, -apple-system, Arial;
+        margin: 24px;
+        background: var(--md-bg);
+        color: var(--md-on-surface);
+
+        /* Material-inspired theme variables */
+        :root {
+          --md-primary: #1e88e5;
+          /* blue-600 */
+          --md-on-primary: #ffffff;
+          --md-surface: #ffffff;
+          --md-bg: #f5f7fb;
+          --md-on-surface: #111827;
+          --md-muted: #6b7280;
+          --md-radius: 8px;
+          --md-elevation-1: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+          --md-elevation-2: 0 4px 6px rgba(16, 24, 40, 0.08), 0 2px 4px rgba(16, 24, 40, 0.06);
+        }
+
+        html,
+        body {
+          height: 100%;
+        }
+
+        body {
+          font-family: 'Roboto', 'Segoe UI', Inter, system-ui, -apple-system, Arial;
+          margin: 24px;
+          background: var(--md-bg);
+          color: var(--md-on-surface);
+          -webkit-font-smoothing: antialiased;
+        }
+
+        /* Tabs — formal / developer-portal style */
+        .tabs {
+          display: flex;
+          gap: 0;
+          margin-bottom: 18px;
+          border-bottom: 1px solid rgba(16, 24, 40, 0.06);
+          background: transparent;
+        }
+
+        .tab {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 12px 18px;
+          min-width: 160px;
+          color: var(--md-muted);
+          cursor: pointer;
+          transition: color .14s ease, border-color .14s ease, background .14s ease;
+          background: transparent;
+          border: none;
+          font-size: 14px;
+          letter-spacing: 0.2px;
+        }
+
+        .tab+.tab {
+          border-left: 1px solid rgba(16, 24, 40, 0.02);
+        }
+
+        .tab:hover {
+          color: var(--md-on-surface);
+          background: rgba(16, 24, 40, 0.02);
+        }
+
+        .tab.active {
+          color: var(--md-on-surface);
+          font-weight: 600;
+          position: relative;
+        }
+
+        .tab.active::after {
+          content: '';
+          position: absolute;
+          left: 12px;
+          right: 12px;
+          bottom: -1px;
+          height: 3px;
+          border-radius: 4px 4px 0 0;
+          background: var(--md-primary);
+          box-shadow: 0 2px 6px rgba(30, 136, 229, 0.18);
+        }
+
+        /* Panel (card) */
+        .panel {
+          background: var(--md-surface);
+          border-radius: var(--md-radius);
+          padding: 18px;
+          box-shadow: var(--md-elevation-1);
+          border: 1px solid rgba(16, 24, 40, 0.04);
+        }
+
+        /* Layout rows */
+        .row {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          margin-bottom: 12px;
+          flex-wrap: wrap
+        }
+
+        label {
+          min-width: 160px;
+          color: var(--md-muted);
+          font-size: 14px
+        }
+
+        /* Inputs & selects */
+        input[type=text],
+        input[type=number],
+        select,
+        textarea {
+          padding: 10px 12px;
+          border: 1px solid rgba(16, 24, 40, 0.08);
+          border-radius: 8px;
+          min-width: 220px;
+          background: linear-gradient(#fff, #fcfdff);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+          transition: box-shadow .12s ease, border-color .12s ease;
+          outline: none;
+          color: var(--md-on-surface);
+        }
+
+        input[type=text]:focus,
+        input[type=number]:focus,
+        select:focus,
+        textarea:focus {
+          box-shadow: 0 0 0 4px rgba(30, 136, 229, 0.08);
+          border-color: var(--md-primary);
+        }
+
+        /* Buttons */
+        .btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 14px;
+          border-radius: 8px;
+          border: 0;
+          cursor: pointer;
+          user-select: none;
+          font-weight: 600;
+          color: var(--md-on-primary);
+          background: var(--md-primary);
+          box-shadow: var(--md-elevation-1);
+          transition: transform .08s ease, box-shadow .08s ease
+        }
+
+        .btn.secondary {
+          background: transparent;
+          color: var(--md-primary);
+          border: 1px solid rgba(30, 136, 229, 0.12);
+          box-shadow: none
+        }
+
+        .btn:active {
+          transform: translateY(1px)
+        }
+
+        button {
+          padding: 8px 10px;
+          border-radius: 8px;
+          border: 0;
+          cursor: pointer
+        }
+
+        .muted {
+          color: var(--md-muted);
+          font-size: 13px
+        }
+
+        /* Console */
+        .console {
+          margin-top: 12px;
+          height: 180px;
+          overflow: auto;
+          background: #0b1220;
+          color: #cfe9ff;
+          padding: 12px;
+          border-radius: 8px;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace;
+          font-size: 13px;
+          box-shadow: var(--md-elevation-2);
+          white-space: pre-wrap;
+        }
+
+        pre.spec {
+          background: linear-gradient(180deg, #fbfdff, #f7fbff);
+          padding: 12px;
+          border-radius: 8px;
+          overflow: auto;
+          border: 1px solid rgba(16, 24, 40, 0.04)
+        }
+
+        .example {
+          border-top: 1px dashed rgba(16, 24, 40, 0.04);
+          padding-top: 12px;
+          margin-top: 12px
+        }
+
+        .small {
+          font-size: 13px
+        }
+
+        /* Specification table */
+        .spec-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 8px
+        }
+
+        .spec-table th,
+        .spec-table td {
+          padding: 10px 12px;
+          border: 1px solid rgba(16, 24, 40, 0.04);
+          text-align: left;
+          vertical-align: top
+        }
+
+        .spec-table th {
+          background: linear-gradient(180deg, #fbfbff, #f3f6fb);
+          color: var(--md-muted);
+          font-weight: 700
+        }
+
+        .spec-table td code {
+          background: rgba(0, 0, 0, 0.03);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace
+        }
+
+        .spec-table .muted {
+          color: var(--md-muted);
+          font-size: 13px
+        }
+
+        .table-container {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          box-sizing: border-box
+        }
+
+        .table-container .spec-table {
+          min-width: 720px
+        }
+
+        /* Vertical tabs for demo sections */
+        .section-tabs {
+          display: flex;
+          gap: 16px;
+          align-items: flex-start
+        }
+
+        .vertical-tabs {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          min-width: 160px
+        }
+
+        .tab-button {
+          padding: 10px 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(16, 24, 40, 0.06);
+          background: transparent;
+          color: var(--md-on-surface);
+          text-align: left;
+          cursor: pointer
+        }
+
+        .tab-button.active {
+          background: var(--md-primary);
+          color: var(--md-on-primary);
+          box-shadow: var(--md-elevation-1);
+          font-weight: 600
+        }
+
+        .tab-content {
+          flex: 1 1 auto;
+          min-width: 0
+        }
+
+        .tab-pane {
+          display: none
+        }
+
+        .tab-pane.active {
+          display: block
+        }
+
+        @media (max-width:720px) {
+          .section-tabs {
+            flex-direction: column
+          }
+
+          .vertical-tabs {
+            flex-direction: row;
+            overflow-x: auto;
+            min-width: 0
+          }
+
+          .vertical-tabs .tab-button {
+            white-space: nowrap
+          }
+        }
+
+        /* ripple helper element */
+        .ripple {
+          position: relative;
+          overflow: hidden
+        }
+
+        .ripple span.effect {
+          position: absolute;
+          border-radius: 50%;
+          transform: scale(0);
+          background: rgba(255, 255, 255, 0.35);
+          animation: ripple .6s linear;
+          pointer-events: none
+        }
+
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0
+          }
+        }
+
+
+        .spec-table td code {
+          background: rgba(0, 0, 0, 0.03);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace
+        }
+
+        .spec-table .muted {
+          color: var(--md-muted);
+          font-size: 13px
+        }
+
+        /* Table container: enable horizontal scrolling when table is wider than viewport */
+        .table-container {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          /* ensure scrollbars don't overlap content */
+          box-sizing: border-box;
+        }
+
+        /* Give tables a minimum width so smaller viewports will show a horizontal scroll */
+        .table-container .spec-table {
+          min-width: 720px;
+          /* adjust as needed */
+        }
+
+        /* Vertical tabs for demo sections */
+        .section-tabs {
+          display: flex;
+          gap: 16px;
+          align-items: flex-start;
+        }
+
+        .vertical-tabs {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          min-width: 160px;
+        }
+
+        .tab-button {
+          padding: 10px 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(16, 24, 40, 0.06);
+          background: transparent;
+          color: var(--md-on-surface);
+          text-align: left;
+          cursor: pointer;
+        }
+
+        .tab-button.active {
+          background: var(--md-primary);
+          color: var(--md-on-primary);
+          box-shadow: var(--md-elevation-1);
+          font-weight: 600;
+        }
+
+        .tab-content {
+          flex: 1 1 auto;
+          min-width: 0;
+          /* allow children to shrink properly */
+        }
+
+        .tab-pane {
+          display: none;
+        }
+
+        .tab-pane.active {
+          display: block;
+        }
+
+        /* Responsive: collapse vertical tabs into horizontal strip on small screens */
+        @media (max-width: 720px) {
+          .section-tabs {
+            flex-direction: column;
+          }
+
+          .vertical-tabs {
+            flex-direction: row;
+            overflow-x: auto;
+            min-width: 0;
+          }
+
+          .vertical-tabs .tab-button {
+            white-space: nowrap;
+          }
+        }
+
+        /* ripple helper element */
+        .ripple {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .ripple span.effect {
+          position: absolute;
+          border-radius: 50%;
+          transform: scale(0);
+          background: rgba(255, 255, 255, 0.35);
+          animation: ripple .6s linear;
+          pointer-events: none
+        }
+
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0
+          }
+        }
+      }
