@@ -1,12 +1,12 @@
 import { Component, Prop, State, h, Event, EventEmitter, Watch } from '@stencil/core';
-import { ContextOption, HttpMethod, MockSchema, MockBody } from './public-pi';
+import { ContextOption, HttpMethod, MockSchema, MockBody } from './symbols';
 
 @Component({
-  tag: 'my-component',
-  styleUrl: 'my-component.css',
+  tag: 'mock-workbench',
+  styleUrl: 'mock-workbench.css',
   shadow: true,
 })
-export class MyComponent {
+export class MockWorkbench {
   // UI state (based on the Angular example provided)
   @State() showForm: boolean = true;
   @State() position: { bottom: number; right: number } = { bottom: 32, right: 32 };
@@ -323,7 +323,7 @@ export class MyComponent {
       <div>
         <form class="context-form">
           <div class="form-row">
-            <label>Backup / Upload:</label>
+            <label>Backup / Archivo:</label>
           </div>
           <div class="form-row action-row">
             {/* Export config button */}
@@ -394,24 +394,6 @@ export class MyComponent {
           <div class="form-row action-row">
             <button type="button" class="save-btn" onClick={() => this.loadContextById()}>
               Cargar registro
-            </button>
-
-            {/* Export config button */}
-            <button type="button" class="icon-btn" title="Exportar configuración (.json)" onClick={() => this.downloadConfig()} aria-label="Exportar configuración (.json)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <path d="M12 15V3" />
-              </svg>
-            </button>
-
-            {/* Import config button (opens hidden file input) */}
-            <button type="button" class="icon-btn" title="Importar configuración (.json)" onClick={() => this.fileInput?.click()} aria-label="Importar configuración (.json)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 5 17 10" />
-                <path d="M12 5v10" />
-              </svg>
             </button>
 
             <input
@@ -607,4 +589,3 @@ export class MyComponent {
     );
   }
 }
-

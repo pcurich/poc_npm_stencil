@@ -17,6 +17,10 @@
       "import": "./dist/components/my-component.js",
       "types": "./dist/components/my-component.d.ts"
     },
+    "./mock-workbench": {
+      "import": "./dist/components/mock-workbench.js",
+      "types": "./dist/components/mock-workbench.d.ts"
+    },
     "./loader": {
       "import": "./loader/index.js",
       "require": "./loader/index.cjs",

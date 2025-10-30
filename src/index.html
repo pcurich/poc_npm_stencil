@@ -38,7 +38,7 @@
 </head>
 
 <body>
-  <h1>Demo: <code>&lt;my-component&gt;</code></h1>
+  <h1>Demo: <code>&lt;mock-workbench&gt;</code></h1>
 
   <div class="tabs" role="tablist" aria-label="Pestañas de demo">
     <div class="tab active" data-tab="spec">1 · Especificación</div>
@@ -67,7 +67,7 @@
           <tr>
             <td><code>contextId</code></td>
             <td><code>number</code></td>
-            <td>ID para cargar un registro específico desde la pestaña "Cargar".</td>
+            <td>ID para cargar un registro específico desde la pestaña "Load".</td>
             <td>enteros positivos</td>
             <td><code>1</code></td>
           </tr>
@@ -252,7 +252,7 @@
     <div class="row">
       <label>Instancia del componente</label>
       <div>
-        <my-component id="demo-comp"></my-component>
+  <mock-workbench id="demo-comp"></mock-workbench>
       </div>
     </div>
 
@@ -407,7 +407,7 @@
     <h4>1) Caso básico</h4>
     <p class="muted">Escenario: un mock sencillo que responde 200 con un body estático.</p>
     <pre class="spec">// Código conceptual (usando propiedad JS)
-const el = document.createElement('my-component');
+const el = document.createElement('mock-workbench');
 el.name = 'simple-mock';
 el.url = '/api/simple';
 el.httpMethod = 'GET';
@@ -421,13 +421,13 @@ el.addEventListener('saveMockBodyEvent', e => console.log('Saved body', e.detail
 
     <h4>2) Caso complejo</h4>
     <p class="muted">Escenario: mock complejo con headers, delay y uso de eventos para guardar configuraciones remotas.
-    </p>
-    <pre class="spec">const complex = document.createElement('my-component');
-complex.name = 'complex-mock';
-complex.url = '/api/complex/{id}';
-complex.httpMethod = 'POST';
-complex.httpCodeResponseValue = 201;
-complex.delayMs = 1200;
+          <tr>
+            <td><code>loadContextEvent</code></td>
+            <td><code>number</code></td>
+            <td>Emitido para solicitar al host que cargue un contexto/registro por su ID (pestaña <em>Load</em>).</td>
+            <td>ID numérico (enteros positivos)</td>
+            <td><code>42</code></td>
+          </tr>
 complex.responseBody = JSON.stringify({ created: true });
 // headers como objeto (propiedad JS, recomendado)
 complex.headers = { 'Authorization': 'Bearer secret', 'X-Trace-Id': 'abc-123' };
@@ -496,7 +496,7 @@ complex.addEventListener('contextTypeChangeEvent', (ev) => console.log('Context 
         const applyAttrBody = document.getElementById('apply-attr-body');
         const applyPropBody = document.getElementById('apply-prop-body');
 
-        if (!demoComp) { appendLog('No se encontró <my-component id="demo-comp">'); return; }
+  if (!demoComp) { appendLog('No se encontró <mock-workbench id="demo-comp">'); return; }
 
         // Attach event listeners to demo component and log them
         const eventsToLog = ['saveMockSchemaEvent', 'saveMockBodyEvent', 'saveHeadersEvent', 'loadContextEvent', 'contextTypeChangeEvent', 'reloadEvent'];

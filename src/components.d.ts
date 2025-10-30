@@ -5,10 +5,12 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { ContextOption, HttpMethod, MockBody, MockSchema } from "./components/my-component/public-pi";
-export { ContextOption, HttpMethod, MockBody, MockSchema } from "./components/my-component/public-pi";
+import { ContextOption, HttpMethod, MockBody, MockSchema } from "./components/mock-workbench/symbols";
+import { ContextOption as ContextOption1, HttpMethod as HttpMethod1, MockBody as MockBody1, MockSchema as MockSchema1 } from "./components/my-component/public-pi";
+export { ContextOption, HttpMethod, MockBody, MockSchema } from "./components/mock-workbench/symbols";
+export { ContextOption as ContextOption1, HttpMethod as HttpMethod1, MockBody as MockBody1, MockSchema as MockSchema1 } from "./components/my-component/public-pi";
 export namespace Components {
-    interface MyComponent {
+    interface MockWorkbench {
         /**
           * @default 0
          */
@@ -24,7 +26,7 @@ export namespace Components {
          */
         "contextOptions": ContextOption[];
         /**
-          * @default 0
+          * @default 1000
          */
         "delayMs": number;
         /**
@@ -71,18 +73,107 @@ export namespace Components {
          */
         "url": string;
     }
+    interface MyComponent {
+        /**
+          * @default 0
+         */
+        "activeTab": number;
+        /**
+          * ID del contexto que se usará para cargar un registro específico. - Puede ser establecido por el host como una propiedad (`contextId`). - Se utiliza en la pestaña "Cargar"; al pulsar "Cargar registro" el componente   emite `loadContextEvent` con este identificador para que el host lo procese.
+          * @default 1
+         */
+        "contextId": number;
+        /**
+          * List of available context options. Can be provided by the host; defaults to the three built-in options. Marked mutable so the component can update it from the UI (demo mode).
+          * @default [     { id: 1, value: '---------', useMock: false },     { id: 2, value: 'Usar HTTP', useMock: false },     { id: 3, value: 'Usar Data', useMock: true },   ]
+         */
+        "contextOptions": ContextOption1[];
+        /**
+          * @default 1000
+         */
+        "delayMs": number;
+        /**
+          * Optional initial headers provided by the host (made mutable so component may edit them)
+          * @default {}
+         */
+        "headers": Record<string, string>;
+        /**
+          * Codes that populate the Código HTTP select. Can be set by the host as a prop.
+          * @default [200, 204, 400, 500]
+         */
+        "httpCodeResponse": number[];
+        /**
+          * @default 200
+         */
+        "httpCodeResponseValue": number;
+        /**
+          * @default 'GET'
+         */
+        "httpMethod": HttpMethod1;
+        /**
+          * List of available HTTP methods. Can be provided by the host; defaults to the five built-in options.
+          * @default [     'GET',     'POST',     'PUT',     'DELETE',     'PATCH'   ]
+         */
+        "httpMethods": HttpMethod1[];
+        /**
+          * @default ''
+         */
+        "nameMock": string;
+        /**
+          * @default '{}'
+         */
+        "responseBody": string;
+        /**
+          * The current context type can be provided by the host as a ContextOption prop
+         */
+        "selectedContext"?: ContextOption1;
+        /**
+          * @default ''
+         */
+        "serviceCode": string;
+        /**
+          * @default ''
+         */
+        "url": string;
+    }
+}
+export interface MockWorkbenchCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLMockWorkbenchElement;
 }
 export interface MyComponentCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLMyComponentElement;
 }
 declare global {
-    interface HTMLMyComponentElementEventMap {
+    interface HTMLMockWorkbenchElementEventMap {
         "saveMockSchemaEvent": MockSchema;
         "saveMockBodyEvent": MockBody;
         "saveHeadersEvent": Record<string, string>;
         "loadContextEvent": number;
         "contextTypeChangeEvent": ContextOption;
+        "reloadEvent": void;
+    }
+    interface HTMLMockWorkbenchElement extends Components.MockWorkbench, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLMockWorkbenchElementEventMap>(type: K, listener: (this: HTMLMockWorkbenchElement, ev: MockWorkbenchCustomEvent<HTMLMockWorkbenchElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLMockWorkbenchElementEventMap>(type: K, listener: (this: HTMLMockWorkbenchElement, ev: MockWorkbenchCustomEvent<HTMLMockWorkbenchElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLMockWorkbenchElement: {
+        prototype: HTMLMockWorkbenchElement;
+        new (): HTMLMockWorkbenchElement;
+    };
+    interface HTMLMyComponentElementEventMap {
+        "saveMockSchemaEvent": MockSchema1;
+        "saveMockBodyEvent": MockBody1;
+        "saveHeadersEvent": Record<string, string>;
+        "loadContextEvent": number;
+        "contextTypeChangeEvent": ContextOption1;
         "reloadEvent": void;
     }
     interface HTMLMyComponentElement extends Components.MyComponent, HTMLStencilElement {
@@ -100,11 +191,12 @@ declare global {
         new (): HTMLMyComponentElement;
     };
     interface HTMLElementTagNameMap {
+        "mock-workbench": HTMLMockWorkbenchElement;
         "my-component": HTMLMyComponentElement;
     }
 }
 declare namespace LocalJSX {
-    interface MyComponent {
+    interface MockWorkbench {
         /**
           * @default 0
          */
@@ -120,7 +212,7 @@ declare namespace LocalJSX {
          */
         "contextOptions"?: ContextOption[];
         /**
-          * @default 0
+          * @default 1000
          */
         "delayMs"?: number;
         /**
@@ -150,15 +242,15 @@ declare namespace LocalJSX {
           * @default ''
          */
         "nameMock"?: string;
-        "onContextTypeChangeEvent"?: (event: MyComponentCustomEvent<ContextOption>) => void;
-        "onLoadContextEvent"?: (event: MyComponentCustomEvent<number>) => void;
-        "onReloadEvent"?: (event: MyComponentCustomEvent<void>) => void;
-        "onSaveHeadersEvent"?: (event: MyComponentCustomEvent<Record<string, string>>) => void;
-        "onSaveMockBodyEvent"?: (event: MyComponentCustomEvent<MockBody>) => void;
+        "onContextTypeChangeEvent"?: (event: MockWorkbenchCustomEvent<ContextOption>) => void;
+        "onLoadContextEvent"?: (event: MockWorkbenchCustomEvent<number>) => void;
+        "onReloadEvent"?: (event: MockWorkbenchCustomEvent<void>) => void;
+        "onSaveHeadersEvent"?: (event: MockWorkbenchCustomEvent<Record<string, string>>) => void;
+        "onSaveMockBodyEvent"?: (event: MockWorkbenchCustomEvent<MockBody>) => void;
         /**
           * Events emitted so parent implementations can listen
          */
-        "onSaveMockSchemaEvent"?: (event: MyComponentCustomEvent<MockSchema>) => void;
+        "onSaveMockSchemaEvent"?: (event: MockWorkbenchCustomEvent<MockSchema>) => void;
         /**
           * @default '{}'
          */
@@ -176,7 +268,80 @@ declare namespace LocalJSX {
          */
         "url"?: string;
     }
+    interface MyComponent {
+        /**
+          * @default 0
+         */
+        "activeTab"?: number;
+        /**
+          * ID del contexto que se usará para cargar un registro específico. - Puede ser establecido por el host como una propiedad (`contextId`). - Se utiliza en la pestaña "Cargar"; al pulsar "Cargar registro" el componente   emite `loadContextEvent` con este identificador para que el host lo procese.
+          * @default 1
+         */
+        "contextId"?: number;
+        /**
+          * List of available context options. Can be provided by the host; defaults to the three built-in options. Marked mutable so the component can update it from the UI (demo mode).
+          * @default [     { id: 1, value: '---------', useMock: false },     { id: 2, value: 'Usar HTTP', useMock: false },     { id: 3, value: 'Usar Data', useMock: true },   ]
+         */
+        "contextOptions"?: ContextOption1[];
+        /**
+          * @default 1000
+         */
+        "delayMs"?: number;
+        /**
+          * Optional initial headers provided by the host (made mutable so component may edit them)
+          * @default {}
+         */
+        "headers"?: Record<string, string>;
+        /**
+          * Codes that populate the Código HTTP select. Can be set by the host as a prop.
+          * @default [200, 204, 400, 500]
+         */
+        "httpCodeResponse"?: number[];
+        /**
+          * @default 200
+         */
+        "httpCodeResponseValue"?: number;
+        /**
+          * @default 'GET'
+         */
+        "httpMethod"?: HttpMethod1;
+        /**
+          * List of available HTTP methods. Can be provided by the host; defaults to the five built-in options.
+          * @default [     'GET',     'POST',     'PUT',     'DELETE',     'PATCH'   ]
+         */
+        "httpMethods"?: HttpMethod1[];
+        /**
+          * @default ''
+         */
+        "nameMock"?: string;
+        "onContextTypeChangeEvent"?: (event: MyComponentCustomEvent<ContextOption1>) => void;
+        "onLoadContextEvent"?: (event: MyComponentCustomEvent<number>) => void;
+        "onReloadEvent"?: (event: MyComponentCustomEvent<void>) => void;
+        "onSaveHeadersEvent"?: (event: MyComponentCustomEvent<Record<string, string>>) => void;
+        "onSaveMockBodyEvent"?: (event: MyComponentCustomEvent<MockBody1>) => void;
+        /**
+          * Events emitted so parent implementations can listen
+         */
+        "onSaveMockSchemaEvent"?: (event: MyComponentCustomEvent<MockSchema1>) => void;
+        /**
+          * @default '{}'
+         */
+        "responseBody"?: string;
+        /**
+          * The current context type can be provided by the host as a ContextOption prop
+         */
+        "selectedContext"?: ContextOption1;
+        /**
+          * @default ''
+         */
+        "serviceCode"?: string;
+        /**
+          * @default ''
+         */
+        "url"?: string;
+    }
     interface IntrinsicElements {
+        "mock-workbench": MockWorkbench;
         "my-component": MyComponent;
     }
 }
@@ -184,6 +349,7 @@ export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
+            "mock-workbench": LocalJSX.MockWorkbench & JSXBase.HTMLAttributes<HTMLMockWorkbenchElement>;
             "my-component": LocalJSX.MyComponent & JSXBase.HTMLAttributes<HTMLMyComponentElement>;
         }
     }
