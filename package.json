@@ -1,17 +1,17 @@
 {
-  "name": "poc-http-mock",
-  "version": "0.0.1",
-  "description": "Stencil Component Starter",
+  "name": "@pcurich/http-mock-workbench",
+  "version": "2.0.0",
+  "description": "HTTP mock workbench (Stencil) - UI to create, edit, export/import HTTP mock configurations",
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
   "types": "dist/types/index.d.ts",
   "collection": "dist/collection/collection-manifest.json",
   "collection:main": "dist/collection/index.js",
-  "unpkg": "dist/poc-http-mock/poc-http-mock.esm.js",
+  "unpkg": "dist/http-mock-workbench/http-mock-workbench.esm.js",
   "exports": {
     ".": {
-      "import": "./dist/poc-http-mock/poc-http-mock.esm.js",
-      "require": "./dist/poc-http-mock/poc-http-mock.cjs.js"
+      "import": "./dist/http-mock-workbench/http-mock-workbench.esm.js",
+      "require": "./dist/http-mock-workbench/http-mock-workbench.cjs.js"
     },
     "./my-component": {
       "import": "./dist/components/my-component.js",
@@ -40,7 +40,9 @@
     "start": "stencil build --dev --watch --serve",
     "test": "stencil test --spec --e2e",
     "test.watch": "stencil test --spec --e2e --watchAll",
-    "generate": "stencil generate"
+    "generate": "stencil generate",
+    "pack:release": "powershell -ExecutionPolicy Bypass -File ./scripts/pack.ps1",
+    "build-and-pack": "npm run build && npm pack"
   },
   "devDependencies": {
     "@stencil/core": "^4.27.1",

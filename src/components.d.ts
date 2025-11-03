@@ -151,6 +151,7 @@ declare global {
         "saveMockBodyEvent": MockBody;
         "saveHeadersEvent": Record<string, string>;
         "loadContextEvent": number;
+        "deleteContextEvent": number;
         "contextTypeChangeEvent": ContextOption;
         "reloadEvent": void;
     }
@@ -243,6 +244,7 @@ declare namespace LocalJSX {
          */
         "nameMock"?: string;
         "onContextTypeChangeEvent"?: (event: MockWorkbenchCustomEvent<ContextOption>) => void;
+        "onDeleteContextEvent"?: (event: MockWorkbenchCustomEvent<number>) => void;
         "onLoadContextEvent"?: (event: MockWorkbenchCustomEvent<number>) => void;
         "onReloadEvent"?: (event: MockWorkbenchCustomEvent<void>) => void;
         "onSaveHeadersEvent"?: (event: MockWorkbenchCustomEvent<Record<string, string>>) => void;

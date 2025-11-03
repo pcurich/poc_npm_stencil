@@ -1,7 +1,7 @@
 import { Config } from '@stencil/core';
 
 export const config: Config = {
-  namespace: 'poc-http-mock',
+  namespace: 'http-mock-workbench',
   outputTargets: [
     {
       type: 'dist',
@@ -25,6 +25,7 @@ export const config: Config = {
       ],
     },
   ],
+  preamble: 'UX config workbench',
   testing: {
     browserHeadless: "shell",
   },

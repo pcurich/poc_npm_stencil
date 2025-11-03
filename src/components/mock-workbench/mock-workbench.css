@@ -80,10 +80,8 @@
   height: 18px;
 }
 
-/* compact save button alignment when next to icons */
-.save-btn {
-  padding: 10px 14px;
-}
+
+
 
 label {
   font-weight: 500;
@@ -113,10 +111,14 @@ input:focus {
   color: #fff;
   border: none;
   border-radius: 6px;
-  padding: 10px 18px;
+  padding: 10px 14px;
   font-size: 15px;
   cursor: pointer;
   transition: background 0.2s;
+}
+
+.save-btn:hover {
+  background: #4991da;
 }
 
 .tabs {
@@ -176,17 +178,18 @@ textarea#textarea {
   transform: translateY(1px) scale(0.995);
 }
 
-.remove-btn {
+.delete-btn {
   background: #ffebee;
   color: #b71c1c;
   border: 1px solid rgba(183,28,28,0.12);
   border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 13px;
   cursor: pointer;
-  transition: background 0.12s, transform 0.08s;
+  padding: 10px 18px;
+  font-size: 15px;
+  transition: background 0.2s;
 }
-.remove-btn:hover {
+
+.delete-btn:hover {
   background: #ffcdd2;
 }
 .remove-btn:active {

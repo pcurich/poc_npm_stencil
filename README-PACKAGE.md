@@ -1,4 +1,4 @@
-# poc-http-mock — Package usage
+# @pcurich/http-mock-workbench — Package usage
 
 This repository contains a Stencil component `mock-workbench` (web component).
 
@@ -24,13 +24,13 @@ npm run build
 npm pack
 ```
 
-This produces a file like `poc-http-mock-0.0.1.tgz` which you can install in another project.
+This produces a file like `pcurich-http-mock-workbench-2.0.0.tgz` (for scoped packages npm replaces the `@scope/` prefix in the filename) which you can install in another project.
 
 4. In your consuming project, install the local package:
 
 ```powershell
 # from the consumer project
-npm install ../path/to/poc-http-mock-0.0.1.tgz
+npm install ../path/to/pcurich-http-mock-workbench-2.0.0.tgz
 ```
 
 or use a relative file reference in package.json:
@@ -39,7 +39,7 @@ or use a relative file reference in package.json:
 // package.json (consumer)
 {
   "dependencies": {
-    "poc-http-mock": "file:../path/to/poc-http-mock-0.0.1.tgz"
+    "http-mock-workbench": "file:../path/to/http-mock-workbench-2.0.0.tgz"
   }
 }
 ```
@@ -50,7 +50,7 @@ After installation, you can include the Stencil output in your app. If you built
 
 ```html
 <!-- include the component bundle (adjust path as installed) -->
-<script type="module" src="node_modules/poc-http-mock/dist/poc-http-mock/poc-http-mock.esm.js"></script>
+<script type="module" src="node_modules/@pcurich/http-mock-workbench/dist/http-mock-workbench/http-mock-workbench.esm.js"></script>
 
 <!-- then in your HTML -->
 <mock-workbench></mock-workbench>
@@ -59,7 +59,7 @@ After installation, you can include the Stencil output in your app. If you built
 Or, when using frameworks (React/Angular), import the loader and call `defineCustomElements` as recommended by Stencil:
 
 ```js
-import { applyPolyfills, defineCustomElements } from 'poc-http-mock/loader';
+import { applyPolyfills, defineCustomElements } from '@pcurich/http-mock-workbench/loader';
 
 applyPolyfills().then(() => defineCustomElements(window));
 ```

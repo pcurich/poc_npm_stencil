@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
   <title>POC Stencil - MyComponent Demo</title>
 
-  <script type="module" src="/build/poc-http-mock.esm.js"></script>
-  <script nomodule src="/build/poc-http-mock.js"></script>
+  <script type="module" src="/build/http-mock-workbench.esm.js"></script>
+  <script nomodule src="/build/http-mock-workbench.js"></script>
   <link rel="stylesheet" href="./styles.css">
 
   <script>
@@ -217,6 +217,13 @@
             <td><code>loadContextEvent</code></td>
             <td><code>number</code></td>
             <td>Emitido para solicitar al host que cargue un contexto/registro por su ID (pestaña <em>Load</em>).</td>
+            <td>ID numérico (enteros positivos)</td>
+            <td><code>42</code></td>
+          </tr>
+          <tr>
+            <td><code>deleteContextEvent</code></td>
+            <td><code>number</code></td>
+            <td>Emitido para solicitar al host que elimine un contexto/registro por su ID (pestaña <em>Load</em>).</td>
             <td>ID numérico (enteros positivos)</td>
             <td><code>42</code></td>
           </tr>
@@ -499,7 +506,7 @@ complex.addEventListener('contextTypeChangeEvent', (ev) => console.log('Context 
   if (!demoComp) { appendLog('No se encontró <mock-workbench id="demo-comp">'); return; }
 
         // Attach event listeners to demo component and log them
-        const eventsToLog = ['saveMockSchemaEvent', 'saveMockBodyEvent', 'saveHeadersEvent', 'loadContextEvent', 'contextTypeChangeEvent', 'reloadEvent'];
+  const eventsToLog = ['saveMockSchemaEvent', 'saveMockBodyEvent', 'saveHeadersEvent', 'loadContextEvent', 'deleteContextEvent', 'contextTypeChangeEvent', 'reloadEvent'];
         eventsToLog.forEach(evName => {
           demoComp.addEventListener(evName, (ev) => {
             appendLog(evName + ' -> ' + JSON.stringify(ev.detail));
