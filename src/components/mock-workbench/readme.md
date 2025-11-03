@@ -30,6 +30,7 @@
 | Event                    | Description                                         | Type                                    |
 | ------------------------ | --------------------------------------------------- | --------------------------------------- |
 | `contextTypeChangeEvent` |                                                     | `CustomEvent<ContextOption>`            |
+| `deleteContextEvent`     |                                                     | `CustomEvent<number>`                   |
 | `loadContextEvent`       |                                                     | `CustomEvent<number>`                   |
 | `reloadEvent`            |                                                     | `CustomEvent<void>`                     |
 | `saveHeadersEvent`       |                                                     | `CustomEvent<{ [x: string]: string; }>` |

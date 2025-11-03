@@ -83,6 +83,7 @@ export class MockWorkbench {
   @Event() saveMockBodyEvent!: EventEmitter<MockBody>;
   @Event() saveHeadersEvent!: EventEmitter<Record<string, string>>;
   @Event() loadContextEvent!: EventEmitter<number>;
+  @Event() deleteContextEvent!: EventEmitter<number>;
   @Event() contextTypeChangeEvent!: EventEmitter<ContextOption>;
   @Event() reloadEvent!: EventEmitter<void>;
 
@@ -130,7 +131,9 @@ export class MockWorkbench {
     this.selectedContext = selectedOption;
     // Emit the full ContextOption (or undefined if not found)
     this.contextTypeChangeEvent.emit(selectedOption);
-    // Note: original Angular called window.location.reload(); we emit event so the host can decide.
+    // Note: original Angular called window.location.reload(); we emit an explicit reloadEvent
+    // so the host can decide whether to perform a full reload or handle reconfiguration.
+    this.reloadEvent.emit();
   };
 
   // Emit load event with the requested contextId
@@ -392,8 +395,12 @@ export class MockWorkbench {
             <input id="contextId" type="number" value={this.contextId} onInput={(e) => this.onInputNumber(e, 'contextId')} min={1} />
           </div>
           <div class="form-row action-row">
-            <button type="button" class="save-btn" onClick={() => this.loadContextById()}>
+            <button type="button" class="save-btn" title="Cargar registro" onClick={() => this.loadContextById()}>
               Cargar registro
+            </button>
+
+            <button type="button" class="delete-btn" title="Eliminar registro" onClick={() => this.deleteContextEvent.emit(this.contextId)} aria-label="Eliminar registro">
+              Eliminar registro
             </button>
 
             <input
@@ -543,7 +550,7 @@ export class MockWorkbench {
             <textarea id="textarea" rows={8} value={this.responseBody} onInput={(e) => (this.responseBody = (e.target as HTMLTextAreaElement).value)}></textarea>
           </div>
           <button type="button" class="save-btn" onClick={() => this.saveContext()}>
-            Guardar texto
+            Guardar body
           </button>
         </form>
       </div>
