@@ -265,16 +265,17 @@
 
     <div class="example">
       <h4>Configurar props (por sección)</h4>
-      <p class="muted small">Cada sección del componente (Context, Load, Mock, Headers, Body) expone props y emite
+      <p class="muted small">Cada sección del componente (Context, Load, Mock, Headers, Body, Backup) expone props y emite
         eventos. Usa las pestañas a la izquierda para navegar entre secciones.</p>
 
       <div class="section-tabs">
-        <div class="vertical-tabs" role="tablist" aria-orientation="vertical">
+          <div class="vertical-tabs" role="tablist" aria-orientation="vertical">
           <button class="tab-button active" data-section="context">Context</button>
           <button class="tab-button" data-section="load">Load</button>
           <button class="tab-button" data-section="mock">Mock</button>
           <button class="tab-button" data-section="headers">Headers</button>
           <button class="tab-button" data-section="body">Body</button>
+            <button class="tab-button" data-section="backup">Backup</button>
         </div>
 
         <div class="tab-content">
@@ -389,6 +390,23 @@
                 <button id="apply-prop-body" class="btn">Aplicar propiedad (body)</button>
               </div>
               <div class="muted small">Eventos (emitidos por el componente): <code>saveMockBodyEvent</code></div>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-section="backup">
+            <div class="panel" style="margin-bottom:12px">
+              <h5 style="margin:0 0 8px 0">Backup</h5>
+              <div class="row" style="flex-direction:column; gap:8px">
+                <div class="small muted">La pestaña <code>Backup</code> del componente permite exportar la configuración actual a
+                  un archivo JSON y volver a importarla. En la demo puedes abrir la pestaña del componente o disparar
+                  las acciones desde aquí.</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <button id="open-backup" class="btn">Abrir Backup (en componente)</button>
+                  <button id="demo-export" class="btn secondary">Exportar ahora (descargar)</button>
+                  <button id="demo-import" class="btn">Importar ahora (abrir diálogo)</button>
+                </div>
+              </div>
+              <div class="muted small">Nota: la importación abrirá el diálogo de selección de archivo del componente (shadow DOM).</div>
             </div>
           </div>
         </div>
@@ -633,6 +651,35 @@ complex.addEventListener('contextTypeChangeEvent', (ev) => console.log('Context 
           // ignore
         }
 
+        // Backup helper buttons (open component backup tab, trigger export/import)
+        const openBackup = document.getElementById('open-backup');
+        const demoExport = document.getElementById('demo-export');
+        const demoImport = document.getElementById('demo-import');
+
+        if (openBackup) openBackup.addEventListener('click', () => {
+          try { demoComp.activeTab = 5; appendLog('Backup tab opened in component'); } catch (err) { appendLog('Error opening backup tab: ' + String(err)); }
+        });
+
+        if (demoExport) demoExport.addEventListener('click', () => {
+          try {
+            demoComp.activeTab = 5;
+            setTimeout(() => {
+              const btn = demoComp.shadowRoot && demoComp.shadowRoot.querySelector('button[title^="Exportar"]');
+              if (btn) { btn.click(); appendLog('Triggered export in component'); } else appendLog('Export button not found in component');
+            }, 120);
+          } catch (err) { appendLog('Error triggering export: ' + String(err)); }
+        });
+
+        if (demoImport) demoImport.addEventListener('click', () => {
+          try {
+            demoComp.activeTab = 5;
+            setTimeout(() => {
+              const input = demoComp.shadowRoot && demoComp.shadowRoot.querySelector('input[type=file]');
+              if (input) { input.click(); appendLog('Opened import file dialog in component'); } else appendLog('Import input not found in component');
+            }, 120);
+          } catch (err) { appendLog('Error triggering import: ' + String(err)); }
+        });
+
         // Body section
         if (applyAttrBody) applyAttrBody.addEventListener('click', () => {
           if (inpBody && inpBody.value) demoComp.setAttribute('response-body', inpBody.value);
@@ -687,7 +734,7 @@ complex.addEventListener('contextTypeChangeEvent', (ev) => console.log('Context 
             // Map section name to component activeTab index
             try {
               if (demoComp) {
-                const map = { context: 0, load: 1, mock: 2, headers: 3, body: 4 };
+                const map = { context: 0, load: 1, mock: 2, headers: 3, body: 4, backup: 5 };
                 if (section in map) demoComp.activeTab = map[section];
               }
             } catch (err) {
@@ -700,7 +747,7 @@ complex.addEventListener('contextTypeChangeEvent', (ev) => console.log('Context 
         try {
           const init = typeof demoComp.activeTab === 'number' ? Number(demoComp.activeTab) : null;
           if (init !== null && !isNaN(init)) {
-            const reverseMap = ['context', 'load', 'mock', 'headers', 'body'];
+            const reverseMap = ['context', 'load', 'mock', 'headers', 'body', 'backup'];
             const sec = reverseMap[init] || 'context';
             // activate matching button and pane
             document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
