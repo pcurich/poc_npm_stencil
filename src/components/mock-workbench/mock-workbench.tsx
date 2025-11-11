@@ -208,6 +208,7 @@ export class MockWorkbench {
       if (parsed.selectedContext) this.contextTypeChangeEvent.emit(this.selectedContext);
       // clear the input so same file can be selected again
       input.value = '';
+      this.activeTab = 1;
     } catch (e) {
       console.error('Failed to load config file', e);
     }
